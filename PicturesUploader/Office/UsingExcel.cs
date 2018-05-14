@@ -3,6 +3,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using PicturesUploader.Uploaders;
 
 namespace PicturesUploader.Office
 {
@@ -43,7 +44,48 @@ namespace PicturesUploader.Office
                 }
                 finally { throw ex; }
             }
+        }
+        public List<PictureItem> GetPhotoItems(UploaderParameters parameters)
+        {
+            try
+            {
+                Excel.Workbook xlWorkBook = OpenExcelFile(parameters.FilePath);
+                Excel.Worksheet xlWorkSheet = (Excel.Worksheet)xlWorkBook.Sheets[parameters.SelectedSheet.Index];
 
+                if (!CheckData(xlWorkSheet, parameters))
+                {
+                    xlWorkBook.Save();
+                    xlWorkBook.Close();
+                    Release(xlWorkSheet);
+                    Release(xlWorkBook);
+                    string error = "Обнаружены ошибки в таблице. Это могут быть пустые ячейки в столбце номеров плоскотей, либо пустые/некорректные гиперссылки" + Environment.NewLine +
+                        "Ошибки выделены в файле. Исправьте и повторите";
+                    throw new Exception(error);
+                }
+
+                List<PictureItem> Items = new List<PictureItem>();
+                for (int i = parameters.RowBeginUpoload; i <= parameters.RowEndUpload; i++)
+                {
+                    Items.Add(new PictureItem(xlWorkSheet.Range[parameters.PictureNamesColumn + i].Value.ToString().Trim(),
+                                            GetUrlFromCell(xlWorkSheet.Range[parameters.PictureHyperlinksColumn + i])));
+                }
+
+                xlWorkBook.Close();
+                Release(xlWorkSheet);
+                Release(xlWorkBook);
+                ExitExcelApplication();
+                return Items;
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    if (xlApp != null)
+                        ExitExcelApplication();
+                }
+                catch { }
+                throw ex;
+            }
         }
         private ExcelSheet GetExcelSheetInfo(Excel.Worksheet sheet)
         {
@@ -79,6 +121,49 @@ namespace PicturesUploader.Office
             Excel.Workbook xlWorkBook = xlApp.Workbooks.Open(filePath);
 
             return xlWorkBook;
+        }
+        private bool CheckData(Excel.Worksheet sheet, UploaderParameters parameters)
+        {
+            int errors = 0;
+            Excel.Range range = null;
+            for (int i = parameters.RowBeginUpoload; i <= parameters.RowEndUpload; i++)
+            {
+                range = sheet.Range[parameters.PictureNamesColumn + i];
+                if (range.Value == null || range.Value.ToString().Trim() == string.Empty)
+                {
+                    range.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);
+                    errors++;
+                }
+                range = sheet.Range[parameters.PictureHyperlinksColumn + i];
+                if (GetUrlFromCell(range) == null)
+                {
+                    range.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);
+                    errors++;
+                }
+            }
+            Release(range);
+            return (errors > 0) ? false : true;
+        }
+        private string GetUrlFromCell(Excel.Range range)
+        {
+            if (range == null)
+                return null;
+
+            if (range.Hyperlinks.Count > 0)
+                return range.Hyperlinks[1].Address;
+
+            if (range.Value == null)
+                return null;
+
+            string url = range.Value.ToString().Trim();
+            if (string.IsNullOrEmpty(url))
+                return null;
+
+            Uri u;
+            if (Uri.TryCreate(url, UriKind.Absolute, out u))
+                return url;
+
+            return null;
         }
         private void ExitExcelApplication()
         {

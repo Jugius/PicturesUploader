@@ -2,11 +2,13 @@
 using System.Windows.Forms;
 using PicturesUploader.Office;
 using System.Linq;
+using System.ComponentModel;
 
 namespace PicturesUploader
 {
     public partial class MainForm : Form
     {
+        protected BackgroundWorker BWorker;
         private ExcelWorkBookInfo _openedExcelFile = null;
         private ExcelWorkBookInfo OpenedExcelFile
         {
