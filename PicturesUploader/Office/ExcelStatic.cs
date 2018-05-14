@@ -8,6 +8,11 @@ namespace PicturesUploader.Office
 {
     static class ExcelStatic
     {
-        
+        public static bool IsExcelAppInstalled()
+        {
+            Type officeType = Type.GetTypeFromProgID("Excel.Application");
+            if (officeType == null) return false;
+            else return true;
+        }
     }
 }
