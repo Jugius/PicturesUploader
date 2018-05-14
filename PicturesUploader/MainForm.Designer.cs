@@ -30,6 +30,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.btnSettings = new System.Windows.Forms.Button();
             this.rbSaveLocal = new System.Windows.Forms.RadioButton();
             this.rbSaveFTP = new System.Windows.Forms.RadioButton();
             this.pbProgress = new System.Windows.Forms.ProgressBar();
@@ -50,7 +51,6 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.btnStart = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.btnSettings = new System.Windows.Forms.Button();
             this.btnAbout = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.lblStatus = new System.Windows.Forms.Label();
@@ -72,6 +72,19 @@
             this.groupBox3.Size = new System.Drawing.Size(290, 42);
             this.groupBox3.TabIndex = 45;
             this.groupBox3.TabStop = false;
+            // 
+            // btnSettings
+            // 
+            this.btnSettings.FlatAppearance.BorderSize = 0;
+            this.btnSettings.FlatAppearance.MouseDownBackColor = System.Drawing.Color.DeepSkyBlue;
+            this.btnSettings.FlatAppearance.MouseOverBackColor = System.Drawing.Color.LightSkyBlue;
+            this.btnSettings.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSettings.Image = global::PicturesUploader.Properties.Resources.settings_icon_24;
+            this.btnSettings.Location = new System.Drawing.Point(118, 12);
+            this.btnSettings.Name = "btnSettings";
+            this.btnSettings.Size = new System.Drawing.Size(24, 24);
+            this.btnSettings.TabIndex = 39;
+            this.btnSettings.UseVisualStyleBackColor = true;
             // 
             // rbSaveLocal
             // 
@@ -209,6 +222,7 @@
             this.lblFileName.TabIndex = 38;
             this.lblFileName.TabStop = true;
             this.lblFileName.Text = "Открыть файл";
+            this.lblFileName.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lblFileName_LinkClicked);
             // 
             // lblNumberOfColumns
             // 
@@ -285,19 +299,6 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(290, 41);
             this.panel1.TabIndex = 46;
-            // 
-            // btnSettings
-            // 
-            this.btnSettings.FlatAppearance.BorderSize = 0;
-            this.btnSettings.FlatAppearance.MouseDownBackColor = System.Drawing.Color.DeepSkyBlue;
-            this.btnSettings.FlatAppearance.MouseOverBackColor = System.Drawing.Color.LightSkyBlue;
-            this.btnSettings.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSettings.Image = global::PicturesUploader.Properties.Resources.settings_icon_24;
-            this.btnSettings.Location = new System.Drawing.Point(118, 12);
-            this.btnSettings.Name = "btnSettings";
-            this.btnSettings.Size = new System.Drawing.Size(24, 24);
-            this.btnSettings.TabIndex = 39;
-            this.btnSettings.UseVisualStyleBackColor = true;
             // 
             // btnAbout
             // 

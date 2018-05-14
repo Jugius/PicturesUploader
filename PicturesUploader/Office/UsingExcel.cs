@@ -29,8 +29,7 @@ namespace PicturesUploader.Office
                 xlWorkBook.Close();
                 Release(xlWorkSheets);
                 Release(xlWorkBook);
-                xlApp.DisplayAlerts = true;
-                xlApp.Quit();
+                ExitExcelApplication();
 
                 return result;
 
@@ -67,6 +66,7 @@ namespace PicturesUploader.Office
         }
         private Excel.Workbook OpenExcelFile(string filePath)
         {
+            oldCultureInfo = System.Threading.Thread.CurrentThread.CurrentCulture;
             System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
             xlApp = new Excel.Application();
 
