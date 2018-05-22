@@ -3,7 +3,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using PicturesUploader.Uploaders;
+using System.ComponentModel;
 
 namespace PicturesUploader.Office
 {
@@ -42,17 +42,22 @@ namespace PicturesUploader.Office
                     if (xlApp != null)
                         ExitExcelApplication();
                 }
-                finally { throw ex; }
+                finally {
+                    ReleaseUnmanaged();
+                    throw ex;
+                }
             }
         }
-        public List<PictureItem> GetPhotoItems(UploaderParameters parameters)
+
+        public List<PictureItem> GetPhotoItems(ExcelWorkSpaceInfo excelInfo, BackgroundWorker bw)
         {
             try
             {
-                Excel.Workbook xlWorkBook = OpenExcelFile(parameters.FilePath);
-                Excel.Worksheet xlWorkSheet = (Excel.Worksheet)xlWorkBook.Sheets[parameters.SelectedSheet.Index];
+                bw.ReportProgress(0, "Считываем записи из Excel файла");
+                Excel.Workbook xlWorkBook = OpenExcelFile(excelInfo.WorkBook.Path);
+                Excel.Worksheet xlWorkSheet = (Excel.Worksheet)xlWorkBook.Sheets[excelInfo.SelectedSheetIndex];
 
-                if (!CheckData(xlWorkSheet, parameters))
+                if (!CheckData(xlWorkSheet, excelInfo))
                 {
                     xlWorkBook.Save();
                     xlWorkBook.Close();
@@ -64,10 +69,10 @@ namespace PicturesUploader.Office
                 }
 
                 List<PictureItem> Items = new List<PictureItem>();
-                for (int i = parameters.RowBeginUpoload; i <= parameters.RowEndUpload; i++)
+                for (int i = excelInfo.RowBeginUpload; i <= excelInfo.RowEndUpload; i++)
                 {
-                    Items.Add(new PictureItem(xlWorkSheet.Range[parameters.PictureNamesColumn + i].Value.ToString().Trim(),
-                                            GetUrlFromCell(xlWorkSheet.Range[parameters.PictureHyperlinksColumn + i])));
+                    Items.Add(new PictureItem(xlWorkSheet.Range[excelInfo.ColumnPictureNames + i].Value.ToString().Trim(),
+                                            GetUrlFromCell(xlWorkSheet.Range[excelInfo.ColumnPictureHyperlinks + i])));
                 }
 
                 xlWorkBook.Close();
@@ -83,8 +88,11 @@ namespace PicturesUploader.Office
                     if (xlApp != null)
                         ExitExcelApplication();
                 }
-                catch { }
-                throw ex;
+                finally
+                {
+                    ReleaseUnmanaged();
+                    throw ex;
+                }
             }
         }
         private ExcelSheet GetExcelSheetInfo(Excel.Worksheet sheet)
@@ -122,19 +130,19 @@ namespace PicturesUploader.Office
 
             return xlWorkBook;
         }
-        private bool CheckData(Excel.Worksheet sheet, UploaderParameters parameters)
+        private bool CheckData(Excel.Worksheet sheet, ExcelWorkSpaceInfo excelInfo)
         {
             int errors = 0;
             Excel.Range range = null;
-            for (int i = parameters.RowBeginUpoload; i <= parameters.RowEndUpload; i++)
+            for (int i = excelInfo.RowBeginUpload; i <= excelInfo.RowEndUpload; i++)
             {
-                range = sheet.Range[parameters.PictureNamesColumn + i];
+                range = sheet.Range[excelInfo.ColumnPictureNames + i];
                 if (range.Value == null || range.Value.ToString().Trim() == string.Empty)
                 {
                     range.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);
                     errors++;
                 }
-                range = sheet.Range[parameters.PictureHyperlinksColumn + i];
+                range = sheet.Range[excelInfo.ColumnPictureHyperlinks + i];
                 if (GetUrlFromCell(range) == null)
                 {
                     range.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);

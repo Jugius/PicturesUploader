@@ -54,6 +54,8 @@
             this.btnAbout = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.lblStatus = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.txtPictureFolderName = new System.Windows.Forms.TextBox();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -63,13 +65,15 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.txtPictureFolderName);
+            this.groupBox3.Controls.Add(this.label1);
             this.groupBox3.Controls.Add(this.btnSettings);
             this.groupBox3.Controls.Add(this.rbSaveLocal);
             this.groupBox3.Controls.Add(this.rbSaveFTP);
             this.groupBox3.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBox3.Location = new System.Drawing.Point(5, 266);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(290, 42);
+            this.groupBox3.Size = new System.Drawing.Size(290, 72);
             this.groupBox3.TabIndex = 45;
             this.groupBox3.TabStop = false;
             // 
@@ -284,12 +288,13 @@
             // 
             // btnStart
             // 
-            this.btnStart.Location = new System.Drawing.Point(220, 377);
+            this.btnStart.Location = new System.Drawing.Point(220, 410);
             this.btnStart.Name = "btnStart";
             this.btnStart.Size = new System.Drawing.Size(75, 24);
             this.btnStart.TabIndex = 40;
             this.btnStart.Text = "Начать";
             this.btnStart.UseVisualStyleBackColor = true;
+            this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
             // 
             // panel1
             // 
@@ -307,7 +312,7 @@
             this.btnAbout.FlatAppearance.MouseOverBackColor = System.Drawing.Color.LightSkyBlue;
             this.btnAbout.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAbout.Image = global::PicturesUploader.Properties.Resources.Actions_help_about_icon_24;
-            this.btnAbout.Location = new System.Drawing.Point(14, 377);
+            this.btnAbout.Location = new System.Drawing.Point(15, 410);
             this.btnAbout.Name = "btnAbout";
             this.btnAbout.Size = new System.Drawing.Size(24, 24);
             this.btnAbout.TabIndex = 47;
@@ -318,7 +323,7 @@
             this.groupBox4.Controls.Add(this.lblStatus);
             this.groupBox4.Controls.Add(this.pbProgress);
             this.groupBox4.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox4.Location = new System.Drawing.Point(5, 308);
+            this.groupBox4.Location = new System.Drawing.Point(5, 338);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(290, 63);
             this.groupBox4.TabIndex = 49;
@@ -335,12 +340,31 @@
             this.lblStatus.TabIndex = 45;
             this.lblStatus.Text = "Текущая задача:";
             // 
+            // label1
+            // 
+            this.label1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label1.Location = new System.Drawing.Point(7, 45);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(101, 15);
+            this.label1.TabIndex = 37;
+            this.label1.Text = "Название папки:";
+            // 
+            // txtPictureFolderName
+            // 
+            this.txtPictureFolderName.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.txtPictureFolderName.Location = new System.Drawing.Point(114, 42);
+            this.txtPictureFolderName.Name = "txtPictureFolderName";
+            this.txtPictureFolderName.Size = new System.Drawing.Size(169, 23);
+            this.txtPictureFolderName.TabIndex = 37;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(300, 408);
+            this.ClientSize = new System.Drawing.Size(300, 445);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
@@ -396,6 +420,8 @@
         private System.Windows.Forms.Button btnSettings;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Label lblStatus;
+        private System.Windows.Forms.TextBox txtPictureFolderName;
+        private System.Windows.Forms.Label label1;
     }
 }
 
