@@ -30,10 +30,12 @@ namespace PicturesUploader.Uploaders
                     string ext = imageByteArray.GetExtention();
                     string pictureName = $"{item.Name}.{ext}";
                     item.Address = UploadPicture(imageByteArray, pictureName);
+                    item.Status = true;
                     ticker.Tick();
                 }                
                 catch (Exception ex)
                 {
+                    item.Status = false;
                     item.Address += $" Ошибка: {ex.Message}.";
                 }               
                  

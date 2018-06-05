@@ -12,15 +12,14 @@ namespace PicturesUploader
         public static bool IsUrlImage(string url)
         {
             int attempts = 0;
-
-            Uri uri = new Uri(url);
-            if (uri.HasRequestProtection())
+                        
+            if (url.HasRequestProtection())
             {
                 do
                 {
                     try
                     {
-                        return IsUrlImage(url);
+                        return IsUrlImageProtected(url);
                     }
                     catch (Exception ex)
                     {
@@ -35,13 +34,13 @@ namespace PicturesUploader
             }
             else
             {
-                return IsUrlImage(url);
+                return IsUrlImageProtected(url);
             }
         }
 
-        private static bool IsUrlImage(Uri uri)
+        private static bool IsUrlImageProtected(string url)
         {
-            var req = (HttpWebRequest)HttpWebRequest.Create(uri);
+            var req = (HttpWebRequest)HttpWebRequest.Create(url);
             req.Method = "HEAD";
             req.Timeout = 5000;
             using (var resp = req.GetResponse())
@@ -53,15 +52,14 @@ namespace PicturesUploader
         public static byte[] DownloadData(string address)
         {
             int attempts = 0;
-            Uri uri = new Uri(address);
 
-            if (uri.HasRequestProtection())
+            if (address.HasRequestProtection())
             {
                 do
                 {
                     try
                     {
-                        return DownloadData(uri);
+                        return DownloadDataProtected(address);
                     }
                     catch (Exception ex)
                     {
@@ -76,17 +74,17 @@ namespace PicturesUploader
             }
             else
             {
-                return DownloadData(uri);
+                return DownloadDataProtected(address);
             }
 
 
         }
-        public static byte[] DownloadData(Uri uri)
+        private static byte[] DownloadDataProtected(string address)
         {
             byte[] response;
             using (WebClient cl = new WebClient())
             {
-                response = cl.DownloadData(uri);
+                response = cl.DownloadData(address);
             }
             return response;
         }
@@ -118,11 +116,9 @@ namespace PicturesUploader
     }
     public static class Ext
     {
-        public static bool HasRequestProtection(this Uri uri)
+        public static bool HasRequestProtection(this string url)
         {
-            if (uri.Host == "maps.googleapis.com")
-                return true;
-            return false;
+            return url.Contains("maps.googleapis.com");
         }
         public static string GetExtention(this byte[] imageByteArray)
         {

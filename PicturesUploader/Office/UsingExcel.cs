@@ -2,7 +2,6 @@
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms;
 using System.ComponentModel;
 
 namespace PicturesUploader.Office
@@ -80,6 +79,44 @@ namespace PicturesUploader.Office
                 Release(xlWorkBook);
                 ExitExcelApplication();
                 return Items;
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    if (xlApp != null)
+                        ExitExcelApplication();
+                }
+                finally
+                {
+                    ReleaseUnmanaged();
+                    throw ex;
+                }
+            }
+        }
+        public void UpdatePhotoItems(IEnumerable<PictureItem> items, ExcelWorkSpaceInfo excelInfo, BackgroundWorker bw)
+        {
+            string targetColumn = ExcelStatic.GetColumnName(excelInfo.SelectedSheet.LastCell.Column + 1);
+            try {
+                bw.ReportProgress(0, "Записываем результат в Excel файл");
+                Excel.Workbook xlWorkBook = OpenExcelFile(excelInfo.WorkBook.Path);
+                Excel.Worksheet xlWorkSheet = (Excel.Worksheet)xlWorkBook.Sheets[excelInfo.SelectedSheetIndex];
+
+                for (int i = excelInfo.RowBeginUpload; i <= excelInfo.RowEndUpload; i++)
+                {
+                    var name = xlWorkSheet.Range[excelInfo.ColumnPictureNames + i].Value.ToString().Trim();
+                    var item = items.FirstOrDefault(a => a.Name == name);
+                    if (item.Status)
+                        xlWorkSheet.Hyperlinks.Add(Anchor: xlWorkSheet.Range[targetColumn + i], Address: item.Address, TextToDisplay: "Фото");
+                    else
+                        xlWorkSheet.Range[targetColumn + i].Value = item.Address;
+                }
+                xlWorkBook.Save();
+                xlWorkBook.Close();
+                Release(xlWorkSheet);
+                Release(xlWorkBook);
+                ExitExcelApplication();
+
             }
             catch (Exception ex)
             {

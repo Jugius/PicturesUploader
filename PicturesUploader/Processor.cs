@@ -41,6 +41,11 @@ namespace PicturesUploader
             up.UploadFolder = System.IO.Path.GetDirectoryName(ExcelInfo.WorkBook.Path) + @"\" + UploadFolderName;
             up.RunUpload(items, BW);
 
+            using (UsingExcel xls = new UsingExcel())
+            {
+                xls.UpdatePhotoItems(items, ExcelInfo, BW);
+            }
+
             e.Result = items.Count;
         }
 
