@@ -39,7 +39,7 @@ namespace PicturesUploader
 
             Uploaders.Uploader up = new Uploaders.Uploader();
             up.UploadFolder = System.IO.Path.GetDirectoryName(ExcelInfo.WorkBook.Path) + @"\" + UploadFolderName;
-            up.UploadPictures(items, BW);
+            up.RunUpload(items, BW);
 
             e.Result = items.Count;
         }
