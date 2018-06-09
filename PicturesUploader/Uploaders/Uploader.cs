@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 
 
@@ -43,7 +40,7 @@ namespace PicturesUploader.Uploaders
             ticker = null;
         }
 
-        private void Ticker_ProgressChanged(ProgressData data)
+        protected void Ticker_ProgressChanged(ProgressData data)
         {
             this.BW.ReportProgress(data.Progress, $"Выполнено: {data.TicksDone} из {data.TicksTotal}");
         }

@@ -1,4 +1,5 @@
 ﻿using PicturesUploader.Office;
+using PicturesUploader.Uploaders;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,43 +8,38 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace PicturesUploader
-{
-    internal enum UploadPicturesDirection { FTP = 1, LOCAL = 2 }
+{    
     class Processor
     {
         private BackgroundWorker BW;
-        public ExcelWorkSpaceInfo ExcelInfo { get; private set; }
-        public UploadPicturesDirection Direction { get; private set; }
-        public string UploadFolderName { get; set; }
-        public Processor(ExcelWorkSpaceInfo excelInfo, UploadPicturesDirection uploadDirection)
-        {
-            this.ExcelInfo = excelInfo;
-            this.Direction = uploadDirection;
-        }
+        private ProcessorParameters Parameters;
         public void RunProcess(object sender, DoWorkEventArgs e)
         {
             this.BW = sender as BackgroundWorker;
+            this.Parameters = e.Argument as ProcessorParameters;
 
-            if (this.ExcelInfo == null)
-                throw new ArgumentNullException("ExcelWorkSpaceInfo is null");
-
+            //Loading Items from excel file
             List<PictureItem> items;
             using (UsingExcel xls = new UsingExcel())
             {
-                items = xls.GetPhotoItems(ExcelInfo, BW);
+                items = xls.GetPhotoItems(this.Parameters.ExcelInfo, this.BW);
             }
             if (items == null || items.Count == 0)
+            {
                 throw new Exception("Нет записей в списке");
+            }
 
-            BW.ReportProgress(-1, $"Записей: {items.Count}.");
+            UploaderBuilder builder = new Uploaders.UploaderBuilder();
+            builder.RootFolder = System.IO.Path.GetDirectoryName(this.Parameters.ExcelInfo.WorkBook.Path);
+            builder.UploadFolderName = this.Parameters.UploadFolderName;
+            builder.UploadDirection = this.Parameters.Direction;
 
-            Uploaders.Uploader up = new Uploaders.Uploader();
-            up.UploadFolder = System.IO.Path.GetDirectoryName(ExcelInfo.WorkBook.Path) + @"\" + UploadFolderName;
-            up.RunUpload(items, BW);
+            var uploader = builder.Build();
+            uploader.RunUpload(items, BW);
 
             using (UsingExcel xls = new UsingExcel())
             {
-                xls.UpdatePhotoItems(items, ExcelInfo, BW);
+                xls.UpdatePhotoItems(items, this.Parameters.ExcelInfo, BW);
             }
 
             e.Result = items.Count;

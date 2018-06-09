@@ -3,6 +3,8 @@ using System.Windows.Forms;
 using PicturesUploader.Office;
 using System.Linq;
 using System.ComponentModel;
+using PicturesUploader.FTPConnection;
+using PicturesUploader.Uploaders;
 
 namespace PicturesUploader
 {
@@ -99,8 +101,13 @@ namespace PicturesUploader
                 excelInfo.RowBeginUpload = Convert.ToInt32(txtBeginRow.Text);
                 excelInfo.RowEndUpload = Convert.ToInt32(txtEndRow.Text);
 
-                this.Processor = new PicturesUploader.Processor(excelInfo, rbSaveLocal.Checked ? UploadPicturesDirection.LOCAL : UploadPicturesDirection.FTP);
-                this.Processor.UploadFolderName = string.IsNullOrEmpty(txtPictureFolderName.Text) ? Guid.NewGuid().ToString() : txtPictureFolderName.Text;
+                var param = new ProcessorParameters
+                {
+                    ExcelInfo = excelInfo,
+                    Direction = rbSaveLocal.Checked ? UploadPicturesDirection.LOCAL : UploadPicturesDirection.FTP,
+                    UploadFolderName = string.IsNullOrEmpty(txtPictureFolderName.Text) ? Guid.NewGuid().ToString() : txtPictureFolderName.Text
+                };
+                
                 SetControlsEnabled(false);
 
                 this.BWorker = new BackgroundWorker();
@@ -110,7 +117,7 @@ namespace PicturesUploader
                 BWorker.RunWorkerCompleted += BWorker_RunWorkerCompleted;
                 BWorker.DoWork += this.Processor.RunProcess;
                 
-                BWorker.RunWorkerAsync();
+                BWorker.RunWorkerAsync(param);
 
             }
             catch (Exception ex) { MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error); }
@@ -132,6 +139,7 @@ namespace PicturesUploader
                 lblStatus.Text = "Завершено успешно";
             }
             SetControlsEnabled(true);
+            
         }
 
         private void BWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -141,6 +149,18 @@ namespace PicturesUploader
 
             if (e.UserState != null)
                 lblStatus.Text = e.UserState.ToString();
+        }
+
+        private void btnSettings_Click(object sender, EventArgs e)
+        {
+            FTPConnectionSettings ftp = FTPConnectionSettings.LoadSettings();
+            using (FTPSettingsDialog dlg = new FTPSettingsDialog(ftp))
+            {
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    FTPConnectionSettings.SaveSettings(dlg.FTPSettings);
+                }
+            }
         }
     }
 }

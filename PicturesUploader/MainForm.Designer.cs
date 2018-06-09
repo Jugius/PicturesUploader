@@ -30,6 +30,8 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.txtPictureFolderName = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.btnSettings = new System.Windows.Forms.Button();
             this.rbSaveLocal = new System.Windows.Forms.RadioButton();
             this.rbSaveFTP = new System.Windows.Forms.RadioButton();
@@ -54,8 +56,6 @@
             this.btnAbout = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.lblStatus = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.txtPictureFolderName = new System.Windows.Forms.TextBox();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -77,6 +77,25 @@
             this.groupBox3.TabIndex = 45;
             this.groupBox3.TabStop = false;
             // 
+            // txtPictureFolderName
+            // 
+            this.txtPictureFolderName.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.txtPictureFolderName.Location = new System.Drawing.Point(114, 42);
+            this.txtPictureFolderName.Name = "txtPictureFolderName";
+            this.txtPictureFolderName.Size = new System.Drawing.Size(169, 23);
+            this.txtPictureFolderName.TabIndex = 37;
+            // 
+            // label1
+            // 
+            this.label1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label1.Location = new System.Drawing.Point(7, 45);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(101, 15);
+            this.label1.TabIndex = 37;
+            this.label1.Text = "Название папки:";
+            // 
             // btnSettings
             // 
             this.btnSettings.FlatAppearance.BorderSize = 0;
@@ -89,6 +108,7 @@
             this.btnSettings.Size = new System.Drawing.Size(24, 24);
             this.btnSettings.TabIndex = 39;
             this.btnSettings.UseVisualStyleBackColor = true;
+            this.btnSettings.Click += new System.EventHandler(this.btnSettings_Click);
             // 
             // rbSaveLocal
             // 
@@ -340,25 +360,6 @@
             this.lblStatus.TabIndex = 45;
             this.lblStatus.Text = "Текущая задача:";
             // 
-            // label1
-            // 
-            this.label1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label1.Location = new System.Drawing.Point(7, 45);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(101, 15);
-            this.label1.TabIndex = 37;
-            this.label1.Text = "Название папки:";
-            // 
-            // txtPictureFolderName
-            // 
-            this.txtPictureFolderName.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.txtPictureFolderName.Location = new System.Drawing.Point(114, 42);
-            this.txtPictureFolderName.Name = "txtPictureFolderName";
-            this.txtPictureFolderName.Size = new System.Drawing.Size(169, 23);
-            this.txtPictureFolderName.TabIndex = 37;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -378,6 +379,7 @@
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.Padding = new System.Windows.Forms.Padding(5, 0, 5, 5);
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Pictures Uploader";
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
