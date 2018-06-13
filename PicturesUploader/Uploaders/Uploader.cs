@@ -53,7 +53,7 @@ namespace PicturesUploader.Uploaders
             }
         }
 
-        private string UploadPicture(byte[] imageByteArray, string pictureName)
+        protected virtual string UploadPicture(byte[] imageByteArray, string pictureName)
         {
             string destinationfile = UploadFolder + @"\" + pictureName;
             System.IO.File.WriteAllBytes(destinationfile, imageByteArray);

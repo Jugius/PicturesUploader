@@ -37,7 +37,6 @@ namespace PicturesUploader
                 return IsUrlImageProtected(url);
             }
         }
-
         private static bool IsUrlImageProtected(string url)
         {
             var req = (HttpWebRequest)HttpWebRequest.Create(url);

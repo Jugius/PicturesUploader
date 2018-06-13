@@ -23,14 +23,15 @@ namespace PicturesUploader.Uploaders
         }
         private Uploader GetUploader()
         {
-            var uploader = new UploaderFTP();
-            ////
+            var uploader = new Uploader ();
+            uploader.UploadFolder = RootFolder + @"\" + UploadFolderName;
             return uploader;
         }
         private UploaderFTP GetUploaderFTP()
         {
             var uploader = new UploaderFTP();
-            ////
+            uploader.FTPSettings = FTPConnection.FTPConnectionSettings.LoadSettings();
+            uploader.UploadFolder = UploadFolderName;
             return uploader;
         }
     }

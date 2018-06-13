@@ -12,7 +12,7 @@ namespace PicturesUploader
     {
         private BackgroundWorker BWorker;
         private ExcelWorkBookInfo _openedExcelFile = null;
-        private Processor Processor;
+        private Processor Processor = null;
         private ExcelWorkBookInfo OpenedExcelFile
         {
             get { return _openedExcelFile; }
@@ -111,6 +111,7 @@ namespace PicturesUploader
                 SetControlsEnabled(false);
 
                 this.BWorker = new BackgroundWorker();
+                this.Processor = new Processor();
                 BWorker.WorkerReportsProgress = true;
                 BWorker.WorkerSupportsCancellation = false;
                 BWorker.ProgressChanged += BWorker_ProgressChanged;
