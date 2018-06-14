@@ -39,6 +39,7 @@ namespace PicturesUploader
         public MainForm()
         {            
             InitializeComponent();
+            OpenedExcelFile = null;
         }
         private void ReadExcelFileInfo(string path)
         {
@@ -57,7 +58,8 @@ namespace PicturesUploader
         {
             cmbSheets.Enabled = cmbNames.Enabled = cmbLinks.Enabled = txtBeginRow.Enabled
                 = txtEndRow.Enabled = rbSaveFTP.Enabled = rbSaveLocal.Enabled
-                = txtPictureFolderName.Enabled = enabled;
+                = txtPictureFolderName.Enabled
+                = btnStart.Enabled = enabled;
         }
         private void cmbSheets_SelectedValueChanged(object sender, EventArgs e)
         {
@@ -124,12 +126,6 @@ namespace PicturesUploader
             catch (Exception ex) { MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error); }
 
         }
-
-        private void BWorker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         private void BWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             if (e.Error != null)
@@ -137,10 +133,10 @@ namespace PicturesUploader
                 MessageBox.Show(e.Error.Message, "Ошибка выполнения", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else {
-                lblStatus.Text = "Завершено успешно";
+                lblStatus.Text = "Завершено";
             }
-            SetControlsEnabled(true);
-            
+            System.Diagnostics.Process.Start(this.OpenedExcelFile.Path);
+            SetControlsEnabled(true);            
         }
 
         private void BWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -162,6 +158,12 @@ namespace PicturesUploader
                     FTPConnectionSettings.SaveSettings(dlg.FTPSettings);
                 }
             }
+        }
+
+        private void btnAbout_Click(object sender, EventArgs e)
+        {
+            AboutForm about = new AboutForm();
+            about.ShowDialog();
         }
     }
 }

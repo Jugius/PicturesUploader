@@ -337,6 +337,7 @@
             this.btnAbout.Size = new System.Drawing.Size(24, 24);
             this.btnAbout.TabIndex = 47;
             this.btnAbout.UseVisualStyleBackColor = true;
+            this.btnAbout.Click += new System.EventHandler(this.btnAbout_Click);
             // 
             // groupBox4
             // 
