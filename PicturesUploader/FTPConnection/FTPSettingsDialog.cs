@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 
 namespace PicturesUploader.FTPConnection
 {
@@ -9,29 +11,69 @@ namespace PicturesUploader.FTPConnection
     {
         public FTPConnectionSettings FTPSettings { get; private set; }
         public FTPSettingsDialog(FTPConnectionSettings ftpSettings)
-        {
-            this.FTPSettings = (FTPConnectionSettings)ftpSettings.Clone();
+        {            
             InitializeComponent();
-            txtServer.Text = FTPSettings.Server;
-            txtLogin.Text = FTPSettings.Login;
-            txtPassword.Text = FTPSettings.Password;
-            txtInternalFTPFolder.Text = FTPSettings.InternalFTPFolder;
-            txtExternalWWWFolder.Text = FTPSettings.ExternalWWWFolder;
+
+            if (ftpSettings != null)
+            {
+                this.FTPSettings = ftpSettings;
+                txtServer.Text = $"{ftpSettings.URL.Scheme}://{ftpSettings.URL.Host}:{ftpSettings.URL.Port}" ;
+                txtLogin.Text = ftpSettings.Credential.UserName;
+                txtPassword.Text = ftpSettings.Credential.Password;
+                
+                txtInternalFTPFolder.Text = ftpSettings.URL.AbsolutePath != "/" ? ftpSettings.URL.AbsolutePath.TrimStart('/') : null;
+                txtExternalWWWFolder.Text = FTPSettings.ExternalWWWFolder;
+            }
+            else
+            {
+                txtServer.Text = @"ftp://localhost";
+            }
         }
         private bool IsValidated()
         {
+            if (string.IsNullOrEmpty(txtServer.Text) && string.IsNullOrEmpty(txtLogin.Text) && string.IsNullOrEmpty(txtPassword.Text) && string.IsNullOrEmpty(txtInternalFTPFolder.Text) && string.IsNullOrEmpty(txtExternalWWWFolder.Text))
+            {
+                this.FTPSettings = null;
+                return true;
+            }
             try
             {
                 string server = txtServer.Text.Trim();
 
-                if (string.IsNullOrEmpty(server))
-                    throw new Exception("Адрес сервера должен быть обязательно указан.");
+                if (!server.Contains(@"ftp://"))
+                    server = @"ftp://" + server;
 
-                FTPSettings.Server = server;
-                FTPSettings.Login = txtLogin.Text;
-                FTPSettings.Password = txtPassword.Text;
-                FTPSettings.InternalFTPFolder = txtInternalFTPFolder.Text;
-                FTPSettings.ExternalWWWFolder = txtExternalWWWFolder.Text;
+                Uri url = new Uri(server);
+
+                string addFolder = txtInternalFTPFolder.Text.Trim();
+                if (addFolder != "/")
+                    url = new Uri(Path.Combine(url.AbsoluteUri, addFolder.TrimStart('/')));
+
+
+                NetworkCredential credential;
+
+                if (!url.Scheme.Equals("ftp", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new Exception("The schema of url must be ftp. ");
+                }
+
+                if (url.IsFile)
+                {
+                    url = new Uri(url, "..");
+                }
+
+                if (String.IsNullOrEmpty(txtLogin.Text)
+                        || String.IsNullOrEmpty(txtPassword.Text))
+                {
+                    throw new Exception("Please type the user name and password!");
+                }
+                else
+                {
+                    credential = new NetworkCredential(
+                        txtLogin.Text.Trim(),
+                        txtPassword.Text);
+                }
+                this.FTPSettings = new FTPConnection.FTPConnectionSettings(url, credential, txtExternalWWWFolder.Text);
                 return true;
             }
             catch (Exception ex)
@@ -52,50 +94,43 @@ namespace PicturesUploader.FTPConnection
             if (!IsValidated())
                 return;
 
-            string status;
-            if (TryToConnect(out status))
-                MessageBox.Show("Соединение успешно.", "Соединение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            else
-            {
-                string message = "Ошибка соединения. Ответ сервера:" + Environment.NewLine + status;
-                MessageBox.Show(message, "Соединение", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        private bool TryToConnect(out string status)
-        {
-            status = null;
-            string rootFolder = FTPSettings.Server + FTPSettings.InternalFTPFolder;
-
-            FtpWebRequest requestDir = (FtpWebRequest)FtpWebRequest.Create(rootFolder);
-            requestDir.Method = WebRequestMethods.Ftp.MakeDirectory;
-            requestDir.Credentials = new NetworkCredential(FTPSettings.Login, FTPSettings.Password);
-            requestDir.UsePassive = true;
-            requestDir.UseBinary = true;
-            requestDir.KeepAlive = false;
             try
             {
-                WebResponse response = requestDir.GetResponse();
-                Stream ftpStream = response.GetResponseStream();
-
-                ftpStream.Close();
-                response.Close();
-                return true;
-            }
-            catch (WebException ex)
-            {
-                FtpWebResponse response = (FtpWebResponse)ex.Response;
-                if (response.StatusCode == FtpStatusCode.ActionNotTakenFileUnavailable)
+                if (NetworkClient.FTPClientManager.VerifyFTPUrlExist(this.FTPSettings.URL, this.FTPSettings.Credential))
                 {
-                    response.Close();
-                    return true;
+                    Uri newUri = new Uri(this.FTPSettings.URL, Guid.NewGuid().ToString() + "/");
+                    NetworkClient.FTPClientManager manager = new NetworkClient.FTPClientManager(this.FTPSettings.URL, this.FTPSettings.Credential);
+                    manager.CreateDirectory(newUri);
+                    manager.DeleteDirectory(newUri);
+                    MessageBox.Show("Соединение успешно.", "Соединение", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    response.Close();
-                    status = ex.Message;
-                    return false;
+                    string message = "Ошибка. Адрес FTP не существует. Создайте папку на сервере.\n\n" + this.FTPSettings.URL;
+                    MessageBox.Show(message, "Соединение", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+            catch (Exception ex)
+            {
+
+                string message = "Ошибка соединения. Ответ сервера:" + Environment.NewLine + (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+                MessageBox.Show(message, "Соединение", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }            
+        }     
+        private void _primaryPanel_Paint(object sender, PaintEventArgs e)
+        {
+            DrawThemeBackground(e.Graphics, VisualStyleElement.CreateElement("TASKDIALOG", 1, 0), _primaryPanel.ClientRectangle, e.ClipRectangle);
+        }
+
+        private void _secondaryPanel_Paint(object sender, PaintEventArgs e)
+        {
+            DrawThemeBackground(e.Graphics, VisualStyleElement.CreateElement("TASKDIALOG", 8, 0), _secondaryPanel.ClientRectangle, e.ClipRectangle);
+        }
+
+        private static void DrawThemeBackground(IDeviceContext dc, VisualStyleElement element, Rectangle bounds, Rectangle clipRectangle)
+        {
+            VisualStyleRenderer renderer = new VisualStyleRenderer(element);
+            renderer.DrawBackground(dc, bounds, clipRectangle);
         }
     }
 }

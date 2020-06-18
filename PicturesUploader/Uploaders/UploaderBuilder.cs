@@ -1,38 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PicturesUploader.FTPConnection;
+using System;
 
 namespace PicturesUploader.Uploaders
 {
     class UploaderBuilder
     {
-        public UploadPicturesDirection UploadDirection { get; set; }
-        public string RootFolder { get; set; }
-        public string UploadFolderName { get; set; }
-
-        public Uploader Build()
+        public UploaderBuilder(string directoryName)
         {
-            switch (UploadDirection)
+            this.DirectoryName = directoryName;
+        }
+        string DirectoryName;
+
+        public IUploader Build(UploadDirection direction)
+        {
+            if (direction == UploadDirection.LOCAL)
+                return new UploaderLocal(this.DirectoryName);
+            else if (direction == UploadDirection.FTP)
             {
-                case UploadPicturesDirection.FTP: return GetUploaderFTP();
-                case UploadPicturesDirection.LOCAL:return GetUploader();
-                default:return null;
+                FTPConnectionSettings ftp = FTPConnectionSettings.LoadSettings();
+                if (ftp == null)
+                    throw new Exception("Не указаны параметры подключения к FTP");
+
+                return new UploaderFTP(ftp, this.DirectoryName);
+            }
+            else
+            {
+                throw new Exception("Ошибка создания загрузчика.");
             }
         }
-        private Uploader GetUploader()
-        {
-            var uploader = new Uploader ();
-            uploader.UploadFolder = RootFolder + @"\" + UploadFolderName;
-            return uploader;
-        }
-        private UploaderFTP GetUploaderFTP()
-        {
-            var uploader = new UploaderFTP();
-            uploader.FTPSettings = FTPConnection.FTPConnectionSettings.LoadSettings();
-            uploader.UploadFolder = UploadFolderName;
-            return uploader;
-        }
+
     }
 }

@@ -1,17 +1,21 @@
-﻿namespace PicturesUploader
+﻿using System;
+
+namespace PicturesUploader
 {
     public class PictureItem
     {
-        public string Name { get; set; }
-        public string Address { get; set; }
-        public bool Status { get; set; } = false;
-        public PictureItem(string name, string address)
+        public string Name { get; }
+        public int RowIndex { get; }
+        public Uri Address { get; set; }
+        public Exception Error { get; set; }
+        public PictureItem(int rowIndex, string name)
         {
+            this.RowIndex = rowIndex;
             this.Name = name;
-            this.Address = address;
         }
-        public PictureItem()
+        public PictureItem(int rowIndex, string name, Uri address) : this(rowIndex, name)
         {
-        }
+            this.Address = address;
+        }       
     }
 }

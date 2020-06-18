@@ -5,29 +5,38 @@ using System.Linq;
 using System.ComponentModel;
 using PicturesUploader.FTPConnection;
 using PicturesUploader.Uploaders;
+using System.Drawing;
+using System.Reflection;
 
 namespace PicturesUploader
 {
-    public partial class MainForm : Form
+    public partial class MainForm : Form//, Updater.IUpdatableApplication
     {
         private BackgroundWorker BWorker;
-        private ExcelWorkBookInfo _openedExcelFile = null;
-        private Processor Processor = null;
-        private ExcelWorkBookInfo OpenedExcelFile
+        private ExcelFileInfo _openedExcelFile = null;
+        private ProcessorParameters PrevFinishedParameters = null;
+        private ExcelFileInfo OpenedExcelFile
         {
             get { return _openedExcelFile; }
             set {
                 _openedExcelFile = value;
+                lblStatus.Text = null;
+                groupBox4.Enabled = false;
+                pbProgress.Value = 0;
                 if (value == null)
                 {
-                    lblFileName.Text = "Открыть файл";
-                    lblFileName.LinkColor = System.Drawing.Color.Red;
+                    btnStart.Enabled = false;
+                    lblFileName.Text = null;
                     SetControlsEnabled(false);
+                    cmbSheets.SelectedValueChanged -= new System.EventHandler(this.cmbSheets_SelectedValueChanged);
+                    cmbSheets.Text = cmbNames.Text = cmbLinks.Text= txtBeginRow.Text = txtEndRow.Text = null;
+                    lblNumberOfColumns.Text = "Столбцов:";
+                    lblNumberOfRows.Text = "Строк:";
                 }
                 else
                 {
-                    lblFileName.Text = System.IO.Path.GetFileName(value.Path);
-                    lblFileName.LinkColor = System.Drawing.SystemColors.Highlight;
+                    btnStart.Enabled = true;
+                    lblFileName.Text = System.IO.Path.GetFileName(value.Path);                    
                     cmbSheets.SelectedValueChanged -= new System.EventHandler(this.cmbSheets_SelectedValueChanged);
                     cmbSheets.DataSource = value.Sheets;
                     cmbSheets.SelectedValueChanged += new System.EventHandler(this.cmbSheets_SelectedValueChanged);
@@ -35,15 +44,24 @@ namespace PicturesUploader
                     cmbSheets_SelectedValueChanged(null, null);
                 }                
             }
-        }
+        }    
         public MainForm()
         {            
             InitializeComponent();
+            this.Icon = Properties.Resources.Hard_Disk_Server_icon1;
             OpenedExcelFile = null;
+            btnQuickLoad.Enabled = FTPConnectionSettings.LoadSettings() != null;
+            FTPConnectionSettings.FTPSettingsChanged += FTPConnectionSettings_FTPSettingsChanged;
         }
+
+        private void FTPConnectionSettings_FTPSettingsChanged(FTPConnectionSettings settings)
+        {
+            btnQuickLoad.Enabled = settings != null;
+        }
+
         private void ReadExcelFileInfo(string path)
         {
-            ExcelWorkBookInfo fileInfo = null;
+            ExcelFileInfo fileInfo = null;
             try
             {
                 using (UsingExcel xls = new UsingExcel())
@@ -51,15 +69,19 @@ namespace PicturesUploader
                     fileInfo = xls.ReadExcelFileInfo(path);
                 }
             }
-            catch (Exception ex) { MessageBox.Show(ex.Message, "Ошибка чтения Excel"); }
+            catch (Exception ex)
+            {
+                ShowErrorMessage(ex, "Ошибка чтения Excel");
+            }
             this.OpenedExcelFile = fileInfo;
         }
         private void SetControlsEnabled(bool enabled)
         {
-            cmbSheets.Enabled = cmbNames.Enabled = cmbLinks.Enabled = txtBeginRow.Enabled
+            cmbSheets.Enabled = cmbLinks.Enabled = txtBeginRow.Enabled
                 = txtEndRow.Enabled = rbSaveFTP.Enabled = rbSaveLocal.Enabled
-                = txtPictureFolderName.Enabled
-                = btnStart.Enabled = enabled;
+                = txtPictureFolderName.Enabled = btnRefresh.Enabled
+                = checkbUseNames.Enabled = enabled;
+            cmbNames.Enabled = checkbUseNames.Checked && checkbUseNames.Enabled; 
         }
         private void cmbSheets_SelectedValueChanged(object sender, EventArgs e)
         {
@@ -73,7 +95,7 @@ namespace PicturesUploader
             txtEndRow.Text = sh.LastCell.Row.ToString();
         }
 
-        private void lblFileName_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private void btnOpenFile_Click(object sender, EventArgs e)
         {
             if (this.BWorker != null && BWorker.IsBusy)
             {
@@ -85,58 +107,99 @@ namespace PicturesUploader
             {
                 ReadExcelFileInfo(path);
             }
-            else {
+            else
+            {
                 OpenedExcelFile = null;
             }
-            
+        }
+        private ProcessorParameters GetProcessorParameters()
+        {
+            if (this.OpenedExcelFile == null)
+                throw new Exception("Файл не загружен");
+
+            Office.ExcelSheet selectedSheet = OpenedExcelFile.Sheets.FirstOrDefault(a => a.Index == Convert.ToInt32(cmbSheets.SelectedValue));
+            string columnWithNames = checkbUseNames.Checked ? cmbNames.Text : null;
+            string columnWithLinks = cmbLinks.Text;
+            int rowBegin = Convert.ToInt32(txtBeginRow.Text);
+            int rowEnd = Convert.ToInt32(txtEndRow.Text);
+
+            if (rowBegin < 1 || rowBegin > selectedSheet.LastCell.Row || rowEnd < rowBegin || rowEnd > selectedSheet.LastCell.Row)
+                throw new Exception("Указан неверный диапазон строк");
+
+            UploadingExcelParameters excel = new Office.UploadingExcelParameters(OpenedExcelFile.Path, selectedSheet.Index, columnWithNames, columnWithLinks, rowBegin, rowEnd);
+            ProcessorParameters param = new ProcessorParameters(excel);
+            param.UploadDirectory = txtPictureFolderName.Text.Trim();
+            param.UploadDirection = rbSaveLocal.Checked ? UploadDirection.LOCAL : UploadDirection.FTP;
+
+            return param;
         }
 
         private void btnStart_Click(object sender, EventArgs e)
         {
-            try {
-                if (this.OpenedExcelFile == null)
-                    throw new Exception("Необходимо открыть файл Excel.");
-
-                ExcelWorkSpaceInfo excelInfo = new Office.ExcelWorkSpaceInfo(this.OpenedExcelFile, (int)cmbSheets.SelectedValue);
-                excelInfo.ColumnPictureNames = cmbNames.Text;
-                excelInfo.ColumnPictureHyperlinks = cmbLinks.Text;
-                excelInfo.RowBeginUpload = Convert.ToInt32(txtBeginRow.Text);
-                excelInfo.RowEndUpload = Convert.ToInt32(txtEndRow.Text);
-
-                var param = new ProcessorParameters
+            var b = sender as Button;
+            if (b.Text == "Отмена")
+            {
+                if (this.BWorker != null && BWorker.IsBusy)
                 {
-                    ExcelInfo = excelInfo,
-                    Direction = rbSaveLocal.Checked ? UploadPicturesDirection.LOCAL : UploadPicturesDirection.FTP,
-                    UploadFolderName = string.IsNullOrEmpty(txtPictureFolderName.Text) ? Guid.NewGuid().ToString() : txtPictureFolderName.Text
-                };
-                
-                SetControlsEnabled(false);
-
-                this.BWorker = new BackgroundWorker();
-                this.Processor = new Processor();
-                BWorker.WorkerReportsProgress = true;
-                BWorker.WorkerSupportsCancellation = false;
-                BWorker.ProgressChanged += BWorker_ProgressChanged;
-                BWorker.RunWorkerCompleted += BWorker_RunWorkerCompleted;
-                BWorker.DoWork += this.Processor.RunProcess;
-                
-                BWorker.RunWorkerAsync(param);
-
+                    b.Enabled = false;
+                    pbProgress.Style = ProgressBarStyle.Marquee;
+                    this.BWorker.CancelAsync();
+                }
             }
-            catch (Exception ex) { MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error); }
-
+            else
+            {
+                try
+                {
+                    ProcessorParameters param = GetProcessorParameters();
+                    if (param.Equals(this.PrevFinishedParameters))
+                    {
+                        string mess = "Вы хотите начать загрузку с теми же параметрами, как выполнили до этого. Вероятно, результат будет такой же.\n\nВы хотите продолжить?";
+                        if (MessageBox.Show(mess, "Повторить?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No) return;
+                    }
+                    b.Text = "Отмена";
+                    BeginUploading(param);
+                }
+                catch (Exception ex) { MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+            }
         }
+
+        private void BeginUploading(ProcessorParameters param)
+        {
+            SetControlsEnabled(false);
+            this.BWorker = new BackgroundWorker();
+            var processor = new Processor();
+            BWorker.WorkerReportsProgress = true;
+            BWorker.WorkerSupportsCancellation = true;
+            BWorker.ProgressChanged += BWorker_ProgressChanged;
+            BWorker.RunWorkerCompleted += BWorker_RunWorkerCompleted;
+            BWorker.DoWork += processor.RunProcess;
+
+            groupBox4.Enabled = true;
+            this.PrevFinishedParameters = null;
+
+            BWorker.RunWorkerAsync(param);
+        }
+
         private void BWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             if (e.Error != null)
             {
-                MessageBox.Show(e.Error.Message, "Ошибка выполнения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowErrorMessage(e.Error, "Ошибка выполнения");                
             }
-            else {
-                lblStatus.Text = "Завершено";
+            else if (e.Cancelled)
+            {
+                lblStatus.Text = $"Отменено.";
+            }
+            else
+            {
+                lblStatus.Text = "Обработка файла завершена";
+                this.PrevFinishedParameters = e.Result as ProcessorParameters;
             }
             System.Diagnostics.Process.Start(this.OpenedExcelFile.Path);
-            SetControlsEnabled(true);            
+            SetControlsEnabled(true);
+            btnStart.Text = "Начать";
+            btnStart.Enabled = true;
+            pbProgress.Style = ProgressBarStyle.Continuous;
         }
 
         private void BWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -148,7 +211,7 @@ namespace PicturesUploader
                 lblStatus.Text = e.UserState.ToString();
         }
 
-        private void btnSettings_Click(object sender, EventArgs e)
+        private void btnSettingsFTP_Click(object sender, EventArgs e)
         {
             FTPConnectionSettings ftp = FTPConnectionSettings.LoadSettings();
             using (FTPSettingsDialog dlg = new FTPSettingsDialog(ftp))
@@ -159,11 +222,115 @@ namespace PicturesUploader
                 }
             }
         }
-
-        private void btnAbout_Click(object sender, EventArgs e)
+        private void MainForm_Shown(object sender, EventArgs e)
         {
-            AboutForm about = new AboutForm();
-            about.ShowDialog();
+            new Updater.Updater(this).DoUpdate(Updater.UpdateMethod.Automatic);            
+        }
+
+        private void btnQuickLoad_Click(object sender, EventArgs e)
+        {
+            using (QuickLoadDialog dlg = new QuickLoadDialog())
+            {
+                dlg.ShowDialog(this);
+            }
+
+        }
+
+        private void btnRefresh_Click(object sender, EventArgs e)
+        {
+            if (OpenedExcelFile == null)
+                return;
+            ReadExcelFileInfo(OpenedExcelFile.Path);
+        }
+
+        private void btnSettings_MouseDown(object sender, MouseEventArgs e)
+        {
+            Point screenPoint = btnSettings.PointToScreen(new Point(btnSettings.Left, btnSettings.Bottom));
+            if (screenPoint.Y + mnuSettings.Size.Height > Screen.PrimaryScreen.WorkingArea.Height)
+            {
+                mnuSettings.Show(btnSettings, new Point(0, -mnuSettings.Size.Height));
+            }
+            else
+            {
+                mnuSettings.Show(btnSettings, new Point(0, btnSettings.Height));
+            }
+        }
+        private void btnAbout_MouseDown(object sender, MouseEventArgs e)
+        {
+            Point screenPoint = btnSettings.PointToScreen(new Point(btnSettings.Left, btnSettings.Bottom));
+            if (screenPoint.Y + mnuSettings.Size.Height > Screen.PrimaryScreen.WorkingArea.Height)
+            {
+                mnuAbout.Show(btnSettings, new Point(0, -mnuSettings.Size.Height));
+            }
+            else
+            {
+                mnuAbout.Show(btnSettings, new Point(0, btnSettings.Height));
+            }
+        }
+
+        private void mnuSettingsImage_Click(object sender, EventArgs e) => new ImageSettingsDialog().ShowDialog();
+
+        private void checkbUseNames_CheckedChanged(object sender, EventArgs e)
+        {
+            cmbNames.Enabled = checkbUseNames.Checked;
+        }
+        private void ShowErrorMessage(Exception ex, string caption)
+        {
+            string error = ex.Message;
+            string details = null;
+            if (ex.InnerException != null)
+            {
+                error += "\nОшибка: " + ex.InnerException.Message;
+                if (!string.IsNullOrEmpty(ex.InnerException.StackTrace))
+                    details = "StackTrace: " + ex.InnerException.StackTrace;
+            }
+
+            if (string.IsNullOrEmpty(details))
+            {
+                MessageBox.Show(error, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                try
+                {
+                    var dialogTypeName = "System.Windows.Forms.PropertyGridInternal.GridErrorDlg";
+                    var dialogType = typeof(Form).Assembly.GetType(dialogTypeName);
+
+                    // Create dialog instance.
+                    var dialog = (Form)Activator.CreateInstance(dialogType, new PropertyGrid());
+
+                    // Populate relevant properties on the dialog instance.
+                    dialog.Text = caption;
+                    dialogType.GetProperty("Details").SetValue(dialog, details, null);
+                    dialogType.GetProperty("Message").SetValue(dialog, error, null);
+
+                    // Display dialog.
+                    var result = dialog.ShowDialog();
+                }
+                catch
+                {
+                    MessageBox.Show(error + "\n\n" + details, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                
+            }            
+        }
+
+        private void mnuShowAbout_Click(object sender, EventArgs e)
+        {
+            new AboutDialog().ShowDialog(this);
+        }
+
+        private void mnuHelp_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("http://oohelp.net/picturesuploader/#pictureuploader_howto");
+        }
+
+        private void mnuSendLetter_Click(object sender, EventArgs e)
+        {
+            string mailto = string.Format("mailto:{0}?Subject={1}", "jugius@gmail.com", "Message from app: PicturesUploader");
+            mailto = System.Uri.EscapeUriString(mailto);
+            System.Diagnostics.Process.Start(mailto);
         }
     }
+
 }

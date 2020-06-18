@@ -9,18 +9,20 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PicturesUploader</RootNamespace>
     <AssemblyName>PicturesUploader</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <ShouldCreateLogs>True</ShouldCreateLogs>
     <AdvancedSettingsExpanded>False</AdvancedSettingsExpanded>
-    <UpdateAssemblyVersion>False</UpdateAssemblyVersion>
+    <UpdateAssemblyVersion>True</UpdateAssemblyVersion>
     <UpdateAssemblyFileVersion>True</UpdateAssemblyFileVersion>
     <UpdateAssemblyInfoVersion>False</UpdateAssemblyInfoVersion>
     <UpdatePackageVersion>False</UpdatePackageVersion>
     <AssemblyInfoVersionType>SettingsVersion</AssemblyInfoVersionType>
     <InheritWinAppVersionFrom>None</InheritWinAppVersionFrom>
-    <AssemblyFileVersionSettings>None.None.IncrementOnDemand.Increment</AssemblyFileVersionSettings>
+    <AssemblyFileVersionSettings>None.None.IncrementOnDemandWithReset.IncrementWithResetOnIncrease</AssemblyFileVersionSettings>
+    <AssemblyVersionSettings>None.None.IncrementOnDemandWithReset.None</AssemblyVersionSettings>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,6 +33,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -40,24 +43,45 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Rimshotdesign-Nod2-Hard-Disk-Server.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\Hard-Disk-Server-icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ImageResizer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Libraries\ImageResizer\ImageResizer\bin\Release\ImageResizer.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\..\Libraries\ExcelRuntime\Microsoft.Office.Interop.Excel.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="NetworkClient, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\NetworkClient\NetworkClient\bin\Release\NetworkClient.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="Updater">
+      <HintPath>..\..\Updater\Updater\bin\Release\Updater.exe</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AboutForm.cs">
+    <Compile Include="AboutDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AboutForm.Designer.cs">
-      <DependentUpon>AboutForm.cs</DependentUpon>
+    <Compile Include="AboutDialog.Designer.cs">
+      <DependentUpon>AboutDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="EmbeddedAssembly.cs" />
+    <Compile Include="FTPConnection\Cryptography.cs" />
     <Compile Include="FTPConnection\FTPConnectionSettings.cs" />
     <Compile Include="FTPConnection\FTPSettingsDialog.cs">
       <SubType>Form</SubType>
@@ -65,7 +89,12 @@
     <Compile Include="FTPConnection\FTPSettingsDialog.Designer.cs">
       <DependentUpon>FTPSettingsDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="ImageDownloadHelper.cs" />
+    <Compile Include="ImageSettingsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ImageSettingsDialog.Designer.cs">
+      <DependentUpon>ImageSettingsDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -75,8 +104,9 @@
     <Compile Include="Office\ExcelLastCell.cs" />
     <Compile Include="Office\ExcelSheet.cs" />
     <Compile Include="Office\ExcelStatic.cs" />
-    <Compile Include="Office\ExcelWorkBookInfo.cs" />
-    <Compile Include="Office\ExcelWorkSpaceInfo.cs" />
+    <Compile Include="Office\ExcelFileInfo.cs" />
+    <Compile Include="Office\UploadingExcelParameters.cs" />
+    <Compile Include="Office\IExcelProcessor.cs" />
     <Compile Include="Office\UsingExcel.cs" />
     <Compile Include="PictureItem.cs" />
     <Compile Include="Processor.cs" />
@@ -84,70 +114,76 @@
     <Compile Include="Program.cs" />
     <Compile Include="ProgressTicker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Uploaders\Uploader.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="QuickLoadDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="QuickLoadDialog.Designer.cs">
+      <DependentUpon>QuickLoadDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Settings.cs" />
+    <Compile Include="Uploaders\IUploader.cs" />
+    <Compile Include="Uploaders\UploadDirection.cs" />
+    <Compile Include="Uploaders\UploaderLocal.cs" />
     <Compile Include="Uploaders\UploaderBuilder.cs" />
     <Compile Include="Uploaders\UploaderFTP.cs" />
-    <Compile Include="Uploaders\UploadPicturesDirection.cs" />
-    <EmbeddedResource Include="AboutForm.resx">
-      <DependentUpon>AboutForm.cs</DependentUpon>
+    <EmbeddedResource Include="AboutDialog.resx">
+      <DependentUpon>AboutDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FTPConnection\FTPSettingsDialog.resx">
       <DependentUpon>FTPSettingsDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ImageSettingsDialog.resx">
+      <DependentUpon>ImageSettingsDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
+    <EmbeddedResource Include="QuickLoadDialog.resx">
+      <DependentUpon>QuickLoadDialog.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <Compile Include="MainForm.IUpdatable.cs">
+      <SubType>Form</SubType>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
+    <None Include="Resources\refresh-icon-241.png" />
+    <None Include="Resources\preferences-icon-24.png" />
+    <None Include="Resources\open-file-icon-24.png" />
+    <None Include="Resources\information-icon-24.png" />
+    <None Include="Resources\quick-load-icon-24.png" />
+    <None Include="Resources\open-file-icon-32.png" />
+    <None Include="Resources\Actions-paste-icon.png" />
+    <EmbeddedResource Include="Microsoft.Office.Interop.Excel.dll" />
+    <EmbeddedResource Include="office.dll" />
+    <None Include="Resources\Hard-Disk-Server-icon.png" />
+    <None Include="Resources\Hard-Disk-Server-icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="Resources\copy24.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\settings-icon_24.png" />
-    <None Include="Resources\Actions-help-about-icon_24.png" />
-    <Content Include="Rimshotdesign-Nod2-Hard-Disk-Server.ico" />
+    <None Include="Resources\paste24.png" />
   </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="Microsoft.Office.Core">
-      <Guid>{2DF8D04C-5BFA-101B-BDE5-00AA0044DE52}</Guid>
-      <VersionMajor>2</VersionMajor>
-      <VersionMinor>8</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-      <Private>True</Private>
-    </COMReference>
-    <COMReference Include="Microsoft.Office.Interop.Excel">
-      <Guid>{00020813-0000-0000-C000-000000000046}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>9</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-      <Private>True</Private>
-    </COMReference>
-  </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
