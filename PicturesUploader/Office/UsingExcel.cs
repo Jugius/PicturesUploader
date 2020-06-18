@@ -65,7 +65,7 @@ namespace PicturesUploader.Office
 
                     PictureItem item = new PicturesUploader.PictureItem(i, picName);
                     Uri url = GetUrlFromCell(xlWorkSheet.Range[excelInfo.ColumnWithLinks + i]);
-
+                    
                     if (url == null)
                     {
                         item.Error = new Exception("Не найдена ссылка в ячейке");
@@ -124,15 +124,13 @@ namespace PicturesUploader.Office
         }
         private ExcelSheet GetSheetInfo(Excel.Worksheet sheet)
         {
-            int RowsUsed = -1;
-            int ColsUsed = -1;
             ExcelSheet result = new Office.ExcelSheet();
             result.Name = sheet.Name;
             result.Index = sheet.Index;
             Excel.Range workRange = sheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell);
 
-            RowsUsed = workRange.Row;
-            ColsUsed = workRange.Column;
+            int RowsUsed = workRange.Row;
+            int ColsUsed = workRange.Column;
             Release(workRange);
 
             result.LastCell = new ExcelLastCell(RowsUsed, ColsUsed);
@@ -143,8 +141,7 @@ namespace PicturesUploader.Office
         }
         private Uri GetUrlFromCell(Excel.Range range)
         {
-            Uri u;
-            string url = null;
+            Uri u;            
             if (range == null)
                 return null;
 
@@ -152,17 +149,28 @@ namespace PicturesUploader.Office
             {
                 if (CreateUri(range.Hyperlinks[1].Address, out u))
                     return u;                
-            }               
+            }
 
-            if (range.Value == null)
-                return null;
+            if (range.Value != null)
+            {
+                string url = range.Value.ToString().Trim();
+                if (!string.IsNullOrWhiteSpace(url) && CreateUri(url, out u))
+                    return u;               
+            }
 
-            url = range.Value.ToString().Trim();
-            if (string.IsNullOrEmpty(url))
-                return null;
-            
-            if (CreateUri(url, out u))
-                return u;
+            if (range.Formula != null)
+            {
+                string formula = range.Formula.ToString();
+                if (formula.Contains("HYPERLINK"))
+                {
+                    int Start, End;
+                    Start = formula.IndexOf('"', 0) + 1;
+                    End = formula.IndexOf('"', Start);
+                    formula = formula.Substring(Start, End - Start);
+                    if (CreateUri(formula, out u))
+                        return u;
+                }
+            }            
 
             return null;
         }
