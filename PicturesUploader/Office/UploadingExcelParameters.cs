@@ -9,7 +9,8 @@ namespace PicturesUploader.Office
         public string ColumnWithNames { get; }
         public string ColumnWithLinks { get; }
         public int RowBegin { get; }
-        public int RowEnd { get; }        
+        public int RowEnd { get; }
+        public bool IncludeLinkToCell { get; set; }
         public UploadingExcelParameters(string filePath, int sheetIndex, string columnWithNames, string columnWithLinks, int rowBegin, int rowEnd)
         {
             this.FilePath = filePath;

@@ -43,7 +43,7 @@ namespace PicturesUploader.Office
             if (xlApp == null)
                 throw new Exception("Ошибка чтения файла Excel. Приложение не инициализировано (xlApp = null)");
 
-            Excel.Workbook book = null;
+            Excel.Workbook book;
             try
             {
                     book = xlApp.Workbooks.Open(filePath, ReadOnly: readOnly);

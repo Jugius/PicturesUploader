@@ -127,6 +127,7 @@ namespace PicturesUploader
                 throw new Exception("Указан неверный диапазон строк");
 
             UploadingExcelParameters excel = new Office.UploadingExcelParameters(OpenedExcelFile.Path, selectedSheet.Index, columnWithNames, columnWithLinks, rowBegin, rowEnd);
+            excel.IncludeLinkToCell = this.chkLinkToCell.Checked;
             ProcessorParameters param = new ProcessorParameters(excel);
             param.UploadDirectory = txtPictureFolderName.Text.Trim();
             param.UploadDirection = rbSaveLocal.Checked ? UploadDirection.LOCAL : UploadDirection.FTP;
@@ -153,7 +154,7 @@ namespace PicturesUploader
                     ProcessorParameters param = GetProcessorParameters();
                     if (param.Equals(this.PrevFinishedParameters))
                     {
-                        string mess = "Вы хотите начать загрузку с теми же параметрами, как выполнили до этого. Вероятно, результат будет такой же.\n\nВы хотите продолжить?";
+                        const string mess = "Вы хотите начать загрузку с теми же параметрами, как выполнили до этого. Вероятно, результат будет такой же.\n\nВы хотите продолжить?";
                         if (MessageBox.Show(mess, "Повторить?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No) return;
                     }
                     b.Text = "Отмена";
@@ -327,7 +328,7 @@ namespace PicturesUploader
 
         private void mnuSendLetter_Click(object sender, EventArgs e)
         {
-            string mailto = string.Format("mailto:{0}?Subject={1}", "jugius@gmail.com", "Message from app: PicturesUploader");
+            string mailto = $"mailto:{"jugius@gmail.com"}?Subject={"Message from app: PicturesUploader"}";
             mailto = System.Uri.EscapeUriString(mailto);
             System.Diagnostics.Process.Start(mailto);
         }

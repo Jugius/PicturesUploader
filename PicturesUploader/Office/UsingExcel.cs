@@ -100,8 +100,9 @@ namespace PicturesUploader.Office
                 {
                     if (item.Error == null)
                     {
-                        string s = (item.Address.Scheme == Uri.UriSchemeFile) ? item.Address.LocalPath : item.Address.AbsoluteUri;
-                        xlWorkSheet.Hyperlinks.Add(Anchor: xlWorkSheet.Range[targetColumn + item.RowIndex], Address: s, TextToDisplay: "Фото");
+                        string link = (item.Address.Scheme == Uri.UriSchemeFile) ? item.Address.LocalPath : item.Address.AbsoluteUri;
+                        string val = excelInfo.IncludeLinkToCell ? link : "Фото";
+                        xlWorkSheet.Hyperlinks.Add(Anchor: xlWorkSheet.Range[targetColumn + item.RowIndex], Address: link, TextToDisplay: val);
                     }
                     else
                         xlWorkSheet.Range[targetColumn + item.RowIndex].Value = item.Error.Message;

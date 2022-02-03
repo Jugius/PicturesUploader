@@ -71,6 +71,7 @@
             this.mnuSendLetter = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuShowAbout = new System.Windows.Forms.ToolStripMenuItem();
+            this.chkLinkToCell = new System.Windows.Forms.CheckBox();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -83,6 +84,7 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.chkLinkToCell);
             this.groupBox3.Controls.Add(this.txtPictureFolderName);
             this.groupBox3.Controls.Add(this.label1);
             this.groupBox3.Controls.Add(this.rbSaveLocal);
@@ -91,7 +93,7 @@
             this.groupBox3.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.groupBox3.Location = new System.Drawing.Point(5, 284);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(289, 72);
+            this.groupBox3.Size = new System.Drawing.Size(289, 104);
             this.groupBox3.TabIndex = 45;
             this.groupBox3.TabStop = false;
             // 
@@ -316,7 +318,7 @@
             // btnStart
             // 
             this.btnStart.Font = new System.Drawing.Font("Segoe UI", 9.75F);
-            this.btnStart.Location = new System.Drawing.Point(216, 428);
+            this.btnStart.Location = new System.Drawing.Point(216, 457);
             this.btnStart.Name = "btnStart";
             this.btnStart.Size = new System.Drawing.Size(75, 26);
             this.btnStart.TabIndex = 40;
@@ -349,7 +351,7 @@
             this.groupBox4.Controls.Add(this.lblStatus);
             this.groupBox4.Controls.Add(this.pbProgress);
             this.groupBox4.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBox4.Location = new System.Drawing.Point(5, 356);
+            this.groupBox4.Location = new System.Drawing.Point(5, 388);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(289, 63);
             this.groupBox4.TabIndex = 49;
@@ -483,7 +485,7 @@
             this.toolStripSeparator1,
             this.mnuShowAbout});
             this.mnuAbout.Name = "mnuSettings";
-            this.mnuAbout.Size = new System.Drawing.Size(160, 98);
+            this.mnuAbout.Size = new System.Drawing.Size(160, 76);
             // 
             // mnuHelp
             // 
@@ -511,12 +513,22 @@
             this.mnuShowAbout.Text = "О программе";
             this.mnuShowAbout.Click += new System.EventHandler(this.mnuShowAbout_Click);
             // 
+            // chkLinkToCell
+            // 
+            this.chkLinkToCell.AutoSize = true;
+            this.chkLinkToCell.Location = new System.Drawing.Point(6, 77);
+            this.chkLinkToCell.Name = "chkLinkToCell";
+            this.chkLinkToCell.Size = new System.Drawing.Size(265, 21);
+            this.chkLinkToCell.TabIndex = 38;
+            this.chkLinkToCell.Text = "Значение ячейки - полный путь к файлу";
+            this.chkLinkToCell.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(299, 465);
+            this.ClientSize = new System.Drawing.Size(299, 491);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
@@ -593,6 +605,7 @@
         private System.Windows.Forms.ToolStripMenuItem mnuSendLetter;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem mnuShowAbout;
+        private System.Windows.Forms.CheckBox chkLinkToCell;
     }
 }
 
