@@ -54,16 +54,20 @@ namespace PicturesUploader
                 {
                     try
                     {
-                        ImageResizer.ImageInfo image = ImageResizer.ImageInfo.Build(item.Address);
+                        ImageResizer.ImageInfo image = BuildImage(item.Address);
                         image.ResizeImage(this.Parameters.ImageResizeSettings);
                         string pictureName = $"{item.Name}.{image.SourceExtention}";
-                        item.Address = uploader.SaveImage(image.DestinationBitmap, pictureName);                        
+                        item.Address = uploader.SaveImage(image.DestinationBitmap, pictureName);
                     }
-                    catch (ImageResizer.ImageCorruptedException)
+                    catch(ImageResizer.ImageCorruptedException)
                     {
                         item.Error = new Exception("Не прямая ссылка на изображение, либо файл поврежден");
                     }
-                    catch (Exception ex)
+                    //catch(System.Net.WebException wex)
+                    //{
+                    //    item.Error = wex;
+                    //}
+                    catch(Exception ex)
                     {
                         item.Error = ex;
                     }
@@ -79,6 +83,27 @@ namespace PicturesUploader
                 xls.UpdatePhotoItems(uploadedItems, this.Parameters.ExcelInfo);
             }
             e.Result = items.Count;
+        }
+        private static ImageResizer.ImageInfo BuildImage(Uri uri, int attempt = 0)
+        {
+            try
+            {
+                var image = ImageResizer.ImageInfo.Build(uri);
+                return image;
+            }
+            catch(System.Net.WebException wex)
+            {
+                if(wex.Message.Contains("429") && attempt < 5)
+                {
+                    System.Threading.Thread.Sleep(10000);
+                    return BuildImage(uri, ++attempt);
+                }
+                throw;
+            }
+            catch(Exception)
+            {
+                throw;
+            }
         }
 
         private void Ticker_ProgressChanged(ProgressData data)
