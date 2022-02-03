@@ -29,11 +29,12 @@ namespace PicturesUploader
             fileLoader.RunWorkerAsync(file);
         }
         private void FileLoader_DoWork(object sender, DoWorkEventArgs e)
-        {
+        {            
+            
             ImageResizer.ImageInfo image = ImageResizer.ImageInfo.Build(e.Argument);
             ImageResizer.ResizeSettings settings = new ImageResizer.ResizeSettings();
             settings.ScaleMode = ImageResizer.ScaleMode.None;
-            image.ResizeImage(settings);
+            //image.ResizeImage(settings);
             e.Result = image;
         }
         private void FileLoader_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -61,7 +62,7 @@ namespace PicturesUploader
             ImageResizer.ImageInfo image = e.Argument as ImageResizer.ImageInfo;
 
             string pictureName = $"{Guid.NewGuid()}.{image.SourceExtention}";
-            Uri result = uploader.SaveImage(image.DestinationBitmap, pictureName);
+            Uri result = uploader.SaveImage(image.SourceBitmap, pictureName);
 
             e.Result = result;
         }
