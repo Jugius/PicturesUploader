@@ -60,8 +60,8 @@ namespace PicturesUploader
             uploader.Initialize();
 
             ImageResizer.ImageInfo image = e.Argument as ImageResizer.ImageInfo;
-
-            string pictureName = $"{Guid.NewGuid()}.{image.SourceExtention}";
+            
+            string pictureName = $"{Guid.NewGuid()}.{image.SourceExtention ?? "png"}";
             Uri result = uploader.SaveImage(image.SourceBitmap, pictureName);
 
             e.Result = result;

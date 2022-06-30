@@ -56,7 +56,7 @@ namespace PicturesUploader
                     {
                         ImageResizer.ImageInfo image = BuildImage(item.Address);
                         image.ResizeImage(this.Parameters.ImageResizeSettings);
-                        string pictureName = $"{item.Name}.{image.SourceExtention}";
+                        string pictureName = $"{item.Name}.{image.SourceExtention ?? "png"}";
                         item.Address = uploader.SaveImage(image.DestinationBitmap, pictureName);
                     }
                     catch(ImageResizer.ImageCorruptedException)
