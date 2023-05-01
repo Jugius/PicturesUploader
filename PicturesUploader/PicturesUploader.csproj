@@ -79,6 +79,10 @@
     <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ImageResizer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\ProjectsPublish\Packages\ImageResizer.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>False</EmbedInteropTypes>
@@ -218,10 +222,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Libraries\ImageResizer\ImageResizer\ImageResizer.csproj">
-      <Project>{7f284c33-0186-46e6-b4b5-8e874e8f81e2}</Project>
-      <Name>ImageResizer</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Libraries\NetworkClient\NetworkClient\NetworkClient.csproj">
       <Project>{69ad6a88-e415-415a-a26a-fbb97f226724}</Project>
       <Name>NetworkClient</Name>
