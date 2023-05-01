@@ -6,7 +6,8 @@ using System.ComponentModel;
 using PicturesUploader.FTPConnection;
 using PicturesUploader.Uploaders;
 using System.Drawing;
-using System.Reflection;
+using SoftwareManagement.Updater;
+using System.Threading.Tasks;
 
 namespace PicturesUploader
 {
@@ -15,6 +16,8 @@ namespace PicturesUploader
         private BackgroundWorker BWorker;
         private ExcelFileInfo _openedExcelFile = null;
         private ProcessorParameters PrevFinishedParameters = null;
+
+        private readonly ApplicationDeployment Updater;
         private ExcelFileInfo OpenedExcelFile
         {
             get { return _openedExcelFile; }
@@ -52,6 +55,8 @@ namespace PicturesUploader
             OpenedExcelFile = null;
             btnQuickLoad.Enabled = FTPConnectionSettings.LoadSettings() != null;
             FTPConnectionSettings.FTPSettingsChanged += FTPConnectionSettings_FTPSettingsChanged;
+
+            this.Updater = new ApplicationDeployment(this);
         }
 
         private void FTPConnectionSettings_FTPSettingsChanged(FTPConnectionSettings settings)
@@ -225,7 +230,7 @@ namespace PicturesUploader
         }
         private void MainForm_Shown(object sender, EventArgs e)
         {
-            new Updater.Updater(this).DoUpdate(Updater.UpdateMethod.Automatic);            
+            Task.Run(() => Updater.UpdateApplication(UpdateMethod.Automatic));
         }
 
         private void btnQuickLoad_Click(object sender, EventArgs e)
@@ -318,7 +323,7 @@ namespace PicturesUploader
 
         private void mnuShowAbout_Click(object sender, EventArgs e)
         {
-            new AboutDialog().ShowDialog(this);
+            new AboutDialog(this).ShowDialog();
         }
 
         private void mnuHelp_Click(object sender, EventArgs e)
@@ -332,6 +337,8 @@ namespace PicturesUploader
             mailto = System.Uri.EscapeUriString(mailto);
             System.Diagnostics.Process.Start(mailto);
         }
+
+        private void mnuCheckUpdates_Click(object sender, EventArgs e) => Task.Run(() => this.Updater.UpdateApplication(UpdateMethod.Manual));
     }
 
 }

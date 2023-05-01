@@ -31,6 +31,7 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.chkLinkToCell = new System.Windows.Forms.CheckBox();
             this.txtPictureFolderName = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.rbSaveLocal = new System.Windows.Forms.RadioButton();
@@ -71,7 +72,7 @@
             this.mnuSendLetter = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuShowAbout = new System.Windows.Forms.ToolStripMenuItem();
-            this.chkLinkToCell = new System.Windows.Forms.CheckBox();
+            this.mnuCheckUpdates = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -96,6 +97,16 @@
             this.groupBox3.Size = new System.Drawing.Size(289, 104);
             this.groupBox3.TabIndex = 45;
             this.groupBox3.TabStop = false;
+            // 
+            // chkLinkToCell
+            // 
+            this.chkLinkToCell.AutoSize = true;
+            this.chkLinkToCell.Location = new System.Drawing.Point(6, 77);
+            this.chkLinkToCell.Name = "chkLinkToCell";
+            this.chkLinkToCell.Size = new System.Drawing.Size(265, 21);
+            this.chkLinkToCell.TabIndex = 38;
+            this.chkLinkToCell.Text = "Значение ячейки - полный путь к файлу";
+            this.chkLinkToCell.UseVisualStyleBackColor = true;
             // 
             // txtPictureFolderName
             // 
@@ -483,45 +494,43 @@
             this.mnuHelp,
             this.mnuSendLetter,
             this.toolStripSeparator1,
+            this.mnuCheckUpdates,
             this.mnuShowAbout});
             this.mnuAbout.Name = "mnuSettings";
-            this.mnuAbout.Size = new System.Drawing.Size(160, 76);
+            this.mnuAbout.Size = new System.Drawing.Size(205, 120);
             // 
             // mnuHelp
             // 
             this.mnuHelp.Name = "mnuHelp";
-            this.mnuHelp.Size = new System.Drawing.Size(159, 22);
+            this.mnuHelp.Size = new System.Drawing.Size(204, 22);
             this.mnuHelp.Text = "Справка";
             this.mnuHelp.Click += new System.EventHandler(this.mnuHelp_Click);
             // 
             // mnuSendLetter
             // 
             this.mnuSendLetter.Name = "mnuSendLetter";
-            this.mnuSendLetter.Size = new System.Drawing.Size(159, 22);
+            this.mnuSendLetter.Size = new System.Drawing.Size(204, 22);
             this.mnuSendLetter.Text = "Обратная связь";
             this.mnuSendLetter.Click += new System.EventHandler(this.mnuSendLetter_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(156, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(201, 6);
             // 
             // mnuShowAbout
             // 
             this.mnuShowAbout.Name = "mnuShowAbout";
-            this.mnuShowAbout.Size = new System.Drawing.Size(159, 22);
+            this.mnuShowAbout.Size = new System.Drawing.Size(204, 22);
             this.mnuShowAbout.Text = "О программе";
             this.mnuShowAbout.Click += new System.EventHandler(this.mnuShowAbout_Click);
             // 
-            // chkLinkToCell
+            // mnuCheckUpdates
             // 
-            this.chkLinkToCell.AutoSize = true;
-            this.chkLinkToCell.Location = new System.Drawing.Point(6, 77);
-            this.chkLinkToCell.Name = "chkLinkToCell";
-            this.chkLinkToCell.Size = new System.Drawing.Size(265, 21);
-            this.chkLinkToCell.TabIndex = 38;
-            this.chkLinkToCell.Text = "Значение ячейки - полный путь к файлу";
-            this.chkLinkToCell.UseVisualStyleBackColor = true;
+            this.mnuCheckUpdates.Name = "mnuCheckUpdates";
+            this.mnuCheckUpdates.Size = new System.Drawing.Size(204, 22);
+            this.mnuCheckUpdates.Text = "Проверить обновления";
+            this.mnuCheckUpdates.Click += new System.EventHandler(this.mnuCheckUpdates_Click);
             // 
             // MainForm
             // 
@@ -606,6 +615,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem mnuShowAbout;
         private System.Windows.Forms.CheckBox chkLinkToCell;
+        private System.Windows.Forms.ToolStripMenuItem mnuCheckUpdates;
     }
 }
 

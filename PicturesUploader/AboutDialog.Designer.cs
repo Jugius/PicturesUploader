@@ -30,7 +30,6 @@
         {
             this.panel1 = new System.Windows.Forms.Panel();
             this.linkWWW = new System.Windows.Forms.LinkLabel();
-            this.linkEmail = new System.Windows.Forms.LinkLabel();
             this.btCancel = new System.Windows.Forms.Button();
             this.lblCopyright = new System.Windows.Forms.Label();
             this.lblVersion = new System.Windows.Forms.Label();
@@ -47,7 +46,6 @@
             // 
             this.panel1.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.panel1.Controls.Add(this.linkWWW);
-            this.panel1.Controls.Add(this.linkEmail);
             this.panel1.Controls.Add(this.btCancel);
             this.panel1.Controls.Add(this.lblCopyright);
             this.panel1.Controls.Add(this.lblVersion);
@@ -72,20 +70,6 @@
             this.linkWWW.TabStop = true;
             this.linkWWW.Text = "Сайт разработчика";
             this.linkWWW.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkWWW_LinkClicked);
-            // 
-            // linkEmail
-            // 
-            this.linkEmail.AutoSize = true;
-            this.linkEmail.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.linkEmail.ForeColor = System.Drawing.Color.Coral;
-            this.linkEmail.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(102)))), ((int)(((byte)(187)))));
-            this.linkEmail.Location = new System.Drawing.Point(110, 72);
-            this.linkEmail.Name = "linkEmail";
-            this.linkEmail.Size = new System.Drawing.Size(92, 15);
-            this.linkEmail.TabIndex = 5;
-            this.linkEmail.TabStop = true;
-            this.linkEmail.Text = "Обратная связь";
-            this.linkEmail.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
             // btCancel
             // 
@@ -115,7 +99,7 @@
             this.lblVersion.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(55)))), ((int)(((byte)(55)))), ((int)(((byte)(55)))));
             this.lblVersion.Location = new System.Drawing.Point(110, 30);
             this.lblVersion.Name = "lblVersion";
-            this.lblVersion.Size = new System.Drawing.Size(95, 15);
+            this.lblVersion.Size = new System.Drawing.Size(94, 15);
             this.lblVersion.TabIndex = 2;
             this.lblVersion.Text = "Program Version";
             // 
@@ -194,7 +178,6 @@
         private System.Windows.Forms.Label lblVersion;
         private System.Windows.Forms.Label lblProgramName;
         private System.Windows.Forms.Label lblCopyright;
-        private System.Windows.Forms.LinkLabel linkEmail;
         private System.Windows.Forms.Panel _secondaryPanel;
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btCancel;

@@ -7,27 +7,26 @@ namespace PicturesUploader
 {
     public partial class AboutDialog : Form
     {
-        public const string ApplicationSite = @"http://oohelp.net/picturesuploader/";
-        public const string SupportEmail = @"support@oohelp.net";
+        public const string ApplicationSite = @"https://oohelp.net/picturesuploader/";
 
         public AboutDialog()
         {
             InitializeComponent();
         }
-        public void ShowDialog(Updater.IUpdatableApplication app)
+        public AboutDialog(MainForm app) : this()
         {
-            this.Text = $"О программе {app.ApplicationName}";
-            lblProgramName.Text = app.ApplicationName;
-            this.Icon = app.ApplicationIcon;
-            pictureAppImage.Image = app.ApplicationImage;
+            this.Text = $"О программе Pictures Uploader";
+            lblProgramName.Text = "Pictures Uploader";
+            this.Icon = app.Icon;
+            pictureAppImage.Image = PicturesUploader.Properties.Resources.Hard_Disk_Server_icon;
             var version = app.Version;
-            lblVersion.Text = "Версия: " + version.Major + "." + version.Minor + (version.Build != 0 ? $" (build {version.Build})" : null);
-            lblCopyright.Text = GetAssemblyCopyright(app.ApplicationAssembly);
-            linkWWW.Text = $"Страница {app.ApplicationName}";
-            linkEmail.Text = "Написать нам";
+            lblVersion.Text = "Версия: " + version.Major + "." + version.Minor +
+                (version.Build != 0 ? $" (build {version.Build}" +
+                (version.Revision > 0 ? $" rev. {version.Revision}" : null) + ")" : null);
 
-            base.ShowDialog(app.Context);
-        }
+            lblCopyright.Text = GetAssemblyCopyright(Assembly.GetExecutingAssembly());
+            linkWWW.Text = $"Страница Pictures Uploader";
+        }       
         private string GetAssemblyCopyright(Assembly assembly)
         {
             if (assembly == null) return "";
@@ -38,12 +37,6 @@ namespace PicturesUploader
             }
             return ((AssemblyCopyrightAttribute)attributes[0]).Copyright;
 
-        }
-        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            string mailto = $"mailto:{AboutDialog.SupportEmail}?Subject=Сообщение {lblProgramName.Text}";
-            mailto = System.Uri.EscapeUriString(mailto);
-            System.Diagnostics.Process.Start(mailto);
         }
         private void _secondaryPanel_Paint(object sender, PaintEventArgs e)
         {
