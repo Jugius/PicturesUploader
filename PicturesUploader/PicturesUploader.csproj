@@ -89,6 +89,10 @@
       <HintPath>..\..\Libraries\ExcelRuntime\Microsoft.Office.Interop.Excel.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="NetworkClient, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\ProjectsPublish\Packages\NetworkClient.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
@@ -220,12 +224,6 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Libraries\NetworkClient\NetworkClient\NetworkClient.csproj">
-      <Project>{69ad6a88-e415-415a-a26a-fbb97f226724}</Project>
-      <Name>NetworkClient</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
