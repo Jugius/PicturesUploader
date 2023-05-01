@@ -86,9 +86,18 @@ namespace PicturesUploader
         }
         private static ImageResizer.ImageInfo BuildImage(Uri uri, int attempt = 0)
         {
+            ImageResizer.ImageInfo image;
             try
             {
-                var image = ImageResizer.ImageInfo.Build(uri);
+                if (NetworkClient.GoogleDriveDownloadClient.IsGoogleDriveAddress(uri))
+                {
+                    var data = NetworkClient.GoogleDriveDownloadClient.Instance.DownloadData(uri.AbsoluteUri);
+                    image = ImageResizer.ImageInfo.Build(data);                    
+                }
+                else
+                {
+                    image = ImageResizer.ImageInfo.Build(uri);
+                }                
                 return image;
             }
             catch(System.Net.WebException wex)
@@ -98,10 +107,6 @@ namespace PicturesUploader
                     System.Threading.Thread.Sleep(10000);
                     return BuildImage(uri, ++attempt);
                 }
-                throw;
-            }
-            catch(Exception)
-            {
                 throw;
             }
         }
