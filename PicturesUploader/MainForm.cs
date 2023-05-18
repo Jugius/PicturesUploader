@@ -69,10 +69,8 @@ namespace PicturesUploader
             ExcelFileInfo fileInfo = null;
             try
             {
-                using (UsingExcel xls = new UsingExcel())
-                {
-                    fileInfo = xls.ReadExcelFileInfo(path);
-                }
+                UsingExcel xls = new UsingExcel();
+                fileInfo = xls.ReadExcelFileInfo(path);
             }
             catch (Exception ex)
             {

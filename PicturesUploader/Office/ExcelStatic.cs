@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace PicturesUploader.Office
 {
-    static class ExcelStatic
+    public static class ExcelStatic
     {
         public static bool IsExcelAppInstalled()
         {
@@ -16,9 +14,11 @@ namespace PicturesUploader.Office
         }
         public static string OpenExcelFileDialog()
         {
-            OpenFileDialog f = new OpenFileDialog();
-            f.Filter = "Файлы Excel|*.xls;*.xlsx;*.xlsm";
-            f.Title = "Выберите файл";
+            OpenFileDialog f = new OpenFileDialog
+            {
+                Filter = "Файлы Excel|*.xlsx;*.xlsm",
+                Title = "Выберите файл"
+            };
             if (f.ShowDialog() == DialogResult.OK)
                 return f.FileName;
             return null;
@@ -36,6 +36,21 @@ namespace PicturesUploader.Office
                 dividend = (int)((dividend - modulo) / 26);
             }
             return columnName;
+        }
+        public static int GetColumnNumber(string colAdress)
+        {
+            int[] digits = new int[colAdress.Length];
+            for (int i = 0; i < colAdress.Length; ++i)
+            {
+                digits[i] = Convert.ToInt32(colAdress[i]) - 64;
+            }
+            int mul = 1; int res = 0;
+            for (int pos = digits.Length - 1; pos >= 0; --pos)
+            {
+                res += digits[pos] * mul;
+                mul *= 26;
+            }
+            return res;
         }
         public static List<string> GetColumnNames(int columnNumber)
         {
