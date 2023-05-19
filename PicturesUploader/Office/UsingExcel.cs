@@ -5,89 +5,80 @@ using System.IO;
 
 namespace PicturesUploader.Office
 {
-    internal class UsingExcel
+    internal static class UsingExcel
     {
         private static readonly HashSet<string> allowedFileExtentions = 
             new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".xlsx", ".xlsm" };
-
-        private string OpenedExcelFile;
-        public ExcelFileInfo ReadExcelFileInfo(string fileName)
+                
+        public static ExcelFileInfo ReadExcelFileInfo(string fileName)
         {
-            var file = new FileInfo(fileName);
-
-            if (!allowedFileExtentions.Contains(file.Extension))
+            if (!allowedFileExtentions.Contains(Path.GetExtension(fileName)))
                 throw new Exception("Неподдерживаемый формат. Поддерживаются только файлы Office 2007 и выше, формата .xlsx и .xlsm");
 
             ExcelFileInfo result;
-            using (var fileStream = file.OpenRead())
-            {
-                using (ExcelPackage excel = new ExcelPackage(fileStream))
-                {
-                    if (excel.Workbook?.Worksheets?.Count == 0)
-                        throw new Exception("Не найдены листыы в файле!");
 
-                    List<ExcelSheet> sheets = new List<ExcelSheet>();
-                    foreach (var sheet in excel.Workbook.Worksheets)
-                    {
-                        sheets.Add(GetSheetInfo(sheet));
-                    }
-                    result = new ExcelFileInfo(fileName, sheets);
+            using (ExcelPackage excel = new ExcelPackage(fileName))
+            {
+                if (excel.Workbook?.Worksheets?.Count == 0)
+                    throw new Exception("Не найдены листы в файле!");
+
+                List<ExcelSheet> sheets = new List<ExcelSheet>(excel.Workbook.Worksheets.Count);
+                foreach (var sheet in excel.Workbook.Worksheets)
+                {
+                    sheets.Add(GetSheetInfo(sheet));
                 }
+                result = new ExcelFileInfo(fileName, sheets);
             }
+
             return result;
         }       
 
-        public List<PictureItem> GetPhotoItems(UploadingExcelParameters excelInfo)
+        public static List<PictureItem> GetPhotoItems(UploadingExcelParameters excelInfo)
         {
-            this.OpenedExcelFile = excelInfo.FilePath;
-            var file = new FileInfo(excelInfo.FilePath);
-
             List<PictureItem> items = new List<PictureItem>(excelInfo.RowEnd - excelInfo.RowBegin + 1);
-            int picNamesColumnNumber = string.IsNullOrEmpty(excelInfo.ColumnWithNames) ? 0 : ExcelStatic.GetColumnNumber(excelInfo.ColumnWithNames);
-            int picUrlColumnNumber = ExcelStatic.GetColumnNumber(excelInfo.ColumnWithLinks);
+            int picNamesColumnNumber = string.IsNullOrEmpty(excelInfo.ColumnWithNames) ? 0 : GetColumnNumber(excelInfo.ColumnWithNames);
+            int picUrlColumnNumber = GetColumnNumber(excelInfo.ColumnWithLinks);
 
-            using (var fileStream = file.OpenRead())
+            using (ExcelPackage excel = new ExcelPackage(excelInfo.FilePath))
             {
-                using (ExcelPackage excel = new ExcelPackage(fileStream))
+                var sheet = excel.Workbook.Worksheets[excelInfo.SheetIndex];
+                var uriBuilder = new ExcelUriBuilder(excelInfo.FilePath);
+
+                for (int row = excelInfo.RowBegin; row <= excelInfo.RowEnd; row++)
                 {
-                    var sheet = excel.Workbook.Worksheets[excelInfo.SheetIndex];
-                    
-                    for (int row = excelInfo.RowBegin; row <= excelInfo.RowEnd; row++)
+                    string picName = null;
+                    if (picNamesColumnNumber > 0)
                     {
-                        string picName = null;
-                        if (picNamesColumnNumber > 0)
-                        {
-                            picName = sheet.Cells[row, picNamesColumnNumber].GetValue<string>();                            
-                        }
-
-                        if (string.IsNullOrWhiteSpace(picName))
-                        {
-                            picName = Guid.NewGuid().ToString();
-                        }
-                        else
-                        { 
-                            picName = picName.Trim();
-                        }
-
-                        PictureItem item = new PicturesUploader.PictureItem(row, picName);
-                        Uri url = GetUrlFromCell(sheet.Cells[row, picUrlColumnNumber]);
-
-                        if (url == null)
-                        {
-                            item.Error = new Exception("Не найдена ссылка в ячейке");
-                        }
-                        else
-                        {
-                            item.Address = url;
-                        }
-
-                        items.Add(item);
+                        picName = sheet.Cells[row, picNamesColumnNumber].GetValue<string>();
                     }
+
+                    if (string.IsNullOrWhiteSpace(picName))
+                    {
+                        picName = Guid.NewGuid().ToString();
+                    }
+                    else
+                    {
+                        picName = picName.Trim();
+                    }
+
+                    PictureItem item = new PicturesUploader.PictureItem(row, picName);
+                    Uri url = uriBuilder.GetUrlFromCell(sheet.Cells[row, picUrlColumnNumber]);
+
+                    if (url == null)
+                    {
+                        item.Error = new Exception("Не найдена ссылка в ячейке");
+                    }
+                    else
+                    {
+                        item.Address = url;
+                    }
+
+                    items.Add(item);
                 }
             }
             return items;
         }
-        public void UpdatePhotoItems(IEnumerable<PictureItem> items, UploadingExcelParameters excelInfo)
+        public static void UpdatePhotoItems(IEnumerable<PictureItem> items, UploadingExcelParameters excelInfo)
         {
             using (ExcelPackage excel = new ExcelPackage(excelInfo.FilePath))
             {
@@ -111,7 +102,14 @@ namespace PicturesUploader.Office
                         cell.Value = item.Error.Message;
                     }                        
                 }
-                excel.Save();
+                try
+                {
+                    excel.Save();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Ошибка сохранения файла {excelInfo.FilePath}.", ex);
+                }                
             }            
         }
         private static ExcelSheet GetSheetInfo(ExcelWorksheet sheet)
@@ -121,7 +119,7 @@ namespace PicturesUploader.Office
                 Name = sheet.Name,
                 Index = sheet.Index,
             };
-
+            
             if (sheet.Dimension == null)
             {
                 result.LastCell = new ExcelLastCell(1, 1);
@@ -133,88 +131,43 @@ namespace PicturesUploader.Office
 
             return result;
         }
-
-        private Uri GetUrlFromCell(ExcelRange cell)
+        private static string GetColumnAddress(int columnNumber)
         {
-            if (cell == null)
-                return null;
+            int dividend = columnNumber;
+            string columnName = string.Empty;
+            int modulo;
 
-            if (cell.Hyperlink != null)
+            while (dividend > 0)
             {
-                if (CreateUri(cell.Hyperlink.OriginalString, out Uri u))
-                    return u;
+                modulo = (dividend - 1) % 26;
+                columnName = Convert.ToChar(65 + modulo).ToString() + columnName;
+                dividend = (int)((dividend - modulo) / 26);
             }
-
-            if (cell.Value != null)
-            {
-                string url = cell.GetValue<string>().Trim();
-                if (!string.IsNullOrWhiteSpace(url) && Uri.TryCreate(url, UriKind.Absolute, out Uri u))
-                    return u;
-            }
-
-            if (cell.Formula != null)
-            {
-                string formula = cell.Formula;
-                if (formula.Contains("HYPERLINK"))
-                {
-                    int Start, End;
-                    Start = formula.IndexOf('"', 0) + 1;
-                    End = formula.IndexOf('"', Start);
-                    formula = formula.Substring(Start, End - Start);
-                    string unescaped = Uri.UnescapeDataString(formula);
-                    if (CreateUri(unescaped, out Uri u))
-                        return u;
-                }
-            }
-            return null;
+            return columnName;
         }
-        //private Uri GetUrlFromCell(Excel.Range range)
-        //{
-        //    Uri u;            
-        //    if (range == null)
-        //        return null;
-
-        //    if (range.Hyperlinks.Count > 0)
-        //    {
-        //        if (CreateUri(range.Hyperlinks[1].Address, out u))
-        //            return u;                
-        //    }
-
-        //    if (range.Value != null)
-        //    {
-        //        string url = range.Value.ToString().Trim();
-        //        if (!string.IsNullOrWhiteSpace(url) && CreateUri(url, out u))
-        //            return u;               
-        //    }
-
-        //    if (range.Formula != null)
-        //    {
-        //        string formula = range.Formula.ToString();
-        //        if (formula.Contains("HYPERLINK"))
-        //        {
-        //            int Start, End;
-        //            Start = formula.IndexOf('"', 0) + 1;
-        //            End = formula.IndexOf('"', Start);
-        //            formula = formula.Substring(Start, End - Start);
-        //            if (CreateUri(formula, out u))
-        //                return u;
-        //        }
-        //    }            
-
-        //    return null;
-        //}
-        private bool CreateUri(string s, out Uri uri)
+        private static int GetColumnNumber(string colAdress)
         {
-            if (Uri.TryCreate(s, UriKind.Absolute, out uri))
-                return true;
-
-            string dir = System.IO.Path.GetDirectoryName(this.OpenedExcelFile);
-            string path = System.IO.Path.Combine(dir, s);
-
-            if (System.IO.File.Exists(path) && Uri.TryCreate(path, UriKind.Absolute, out uri))
-                return true;
-
-            return false;
-        }      
+            int[] digits = new int[colAdress.Length];
+            for (int i = 0; i < colAdress.Length; ++i)
+            {
+                digits[i] = Convert.ToInt32(colAdress[i]) - 64;
+            }
+            int mul = 1; int res = 0;
+            for (int pos = digits.Length - 1; pos >= 0; --pos)
+            {
+                res += digits[pos] * mul;
+                mul *= 26;
+            }
+            return res;
+        }
+        public static List<string> GetColumnsNames(int columnNumber)
+        {
+            List<string> columns = new List<string>(columnNumber);
+            for (int i = 1; i <= columnNumber; i++)
+            {
+                columns.Add(GetColumnAddress(i));
+            }
+            return columns;
+        }
     }
 }

@@ -143,8 +143,8 @@
     </Compile>
     <Compile Include="Office\ExcelLastCell.cs" />
     <Compile Include="Office\ExcelSheet.cs" />
-    <Compile Include="Office\ExcelStatic.cs" />
     <Compile Include="Office\ExcelFileInfo.cs" />
+    <Compile Include="Office\ExcelUriBuilder.cs" />
     <Compile Include="Office\UploadingExcelParameters.cs" />
     <Compile Include="Office\UsingExcel.cs" />
     <Compile Include="PictureItem.cs" />

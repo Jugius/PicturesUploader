@@ -18,8 +18,7 @@ namespace PicturesUploader
             List<PictureItem> items;
             BW.ReportProgress(0, "Считываем таблицу...");
             
-            UsingExcel xls = new UsingExcel();
-            items = xls.GetPhotoItems(this.Parameters.ExcelInfo);
+            items = UsingExcel.GetPhotoItems(this.Parameters.ExcelInfo);
 
             if (items == null || items.Count == 0)
             {
@@ -77,7 +76,7 @@ namespace PicturesUploader
             }
 
             BW.ReportProgress(0, "Записываем результат в Excel файл");
-            xls.UpdatePhotoItems(uploadedItems, this.Parameters.ExcelInfo);
+            UsingExcel.UpdatePhotoItems(uploadedItems, this.Parameters.ExcelInfo);
 
             e.Result = items.Count;
         }
