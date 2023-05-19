@@ -91,10 +91,6 @@ namespace PicturesUploader
                     var data = NetworkClient.GoogleDriveDownloadClient.Instance.DownloadData(uri.AbsoluteUri);
                     image = ImageResizer.ImageInfo.Build(data);
                 }
-                else if (uri.Scheme == Uri.UriSchemeFile)
-                {
-                    image = ImageResizer.ImageInfo.Build(uri.LocalPath);
-                }
                 else
                 {
                     image = ImageResizer.ImageInfo.Build(uri);
