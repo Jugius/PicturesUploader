@@ -69,10 +69,7 @@ namespace PicturesUploader
             ExcelFileInfo fileInfo = null;
             try
             {
-                using (UsingExcel xls = new UsingExcel())
-                {
-                    fileInfo = xls.ReadExcelFileInfo(path);
-                }
+                fileInfo = UsingExcel.ReadExcelFileInfo(path);
             }
             catch (Exception ex)
             {
@@ -94,8 +91,8 @@ namespace PicturesUploader
             Office.ExcelSheet sh = OpenedExcelFile.Sheets.FirstOrDefault(a => a.Index == i);
             lblNumberOfColumns.Text = $"Столбцов: {sh.LastCell.Column}";
             lblNumberOfRows.Text = $"Строк: {sh.LastCell.Row}";
-            cmbLinks.DataSource = ExcelStatic.GetColumnNames(sh.LastCell.Column);
-            cmbNames.DataSource = ExcelStatic.GetColumnNames(sh.LastCell.Column);
+            cmbLinks.DataSource = UsingExcel.GetColumnsNames(sh.LastCell.Column);
+            cmbNames.DataSource = UsingExcel.GetColumnsNames(sh.LastCell.Column);
             txtBeginRow.Text = "2";
             txtEndRow.Text = sh.LastCell.Row.ToString();
         }
@@ -107,7 +104,7 @@ namespace PicturesUploader
                 MessageBox.Show("Дождитесь завершения операции.", "Программа в процессе..", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            string path = ExcelStatic.OpenExcelFileDialog();
+            string path = OpenExcelFileDialog();
             if (!string.IsNullOrEmpty(path))
             {
                 ReadExcelFileInfo(path);
@@ -283,42 +280,26 @@ namespace PicturesUploader
         private void ShowErrorMessage(Exception ex, string caption)
         {
             string error = ex.Message;
-            string details = null;
-            if (ex.InnerException != null)
+
+            var baseEx = ex.GetBaseException();
+
+            if (baseEx != null) 
             {
-                error += "\nОшибка: " + ex.InnerException.Message;
-                if (!string.IsNullOrEmpty(ex.InnerException.StackTrace))
-                    details = "StackTrace: " + ex.InnerException.StackTrace;
+                error += "\n\n" + baseEx.Message;
             }
 
-            if (string.IsNullOrEmpty(details))
+            MessageBox.Show(error, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);                     
+        }
+        private string OpenExcelFileDialog()
+        {
+            OpenFileDialog f = new OpenFileDialog
             {
-                MessageBox.Show(error, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            else
-            {
-                try
-                {
-                    var dialogTypeName = "System.Windows.Forms.PropertyGridInternal.GridErrorDlg";
-                    var dialogType = typeof(Form).Assembly.GetType(dialogTypeName);
-
-                    // Create dialog instance.
-                    var dialog = (Form)Activator.CreateInstance(dialogType, new PropertyGrid());
-
-                    // Populate relevant properties on the dialog instance.
-                    dialog.Text = caption;
-                    dialogType.GetProperty("Details").SetValue(dialog, details, null);
-                    dialogType.GetProperty("Message").SetValue(dialog, error, null);
-
-                    // Display dialog.
-                    var result = dialog.ShowDialog();
-                }
-                catch
-                {
-                    MessageBox.Show(error + "\n\n" + details, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                
-            }            
+                Filter = "Файлы Excel|*.xlsx;*.xlsm",
+                Title = "Выберите файл"
+            };
+            if (f.ShowDialog(this) == DialogResult.OK)
+                return f.FileName;
+            return null;
         }
 
         private void mnuShowAbout_Click(object sender, EventArgs e)

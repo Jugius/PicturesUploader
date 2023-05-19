@@ -1,71 +1,69 @@
-﻿using System;
-using Excel = Microsoft.Office.Interop.Excel;
+﻿using OfficeOpenXml;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.ComponentModel;
+using System.IO;
 
 namespace PicturesUploader.Office
 {
-    internal class UsingExcel : IExcelProcessor, IDisposable
+    internal static class UsingExcel
     {
-        private string OpenedExcelFile;
-        public ExcelFileInfo ReadExcelFileInfo(string fileName)
+        private static readonly HashSet<string> allowedFileExtentions = 
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".xlsx", ".xlsm" };
+                
+        public static ExcelFileInfo ReadExcelFileInfo(string fileName)
         {
-            try
+            if (!allowedFileExtentions.Contains(Path.GetExtension(fileName)))
+                throw new Exception("Неподдерживаемый формат. Поддерживаются только файлы Office 2007 и выше, формата .xlsx и .xlsm");
+
+            ExcelFileInfo result;
+
+            using (ExcelPackage excel = new ExcelPackage(fileName))
             {
-                InitializeExcelApplication();
-                this.xlWorkBook = IExcelProcessor.OpenWorkbook(this.xlApp, fileName, true);
+                if (excel.Workbook?.Worksheets?.Count == 0)
+                    throw new Exception("Не найдены листы в файле!");
 
-                List<ExcelSheet> sheets = new List<ExcelSheet>();
-                Excel.Sheets xlWorkSheets = xlWorkBook.Sheets;
-
-                foreach (Excel.Worksheet sheet in xlWorkSheets)
+                List<ExcelSheet> sheets = new List<ExcelSheet>(excel.Workbook.Worksheets.Count);
+                foreach (var sheet in excel.Workbook.Worksheets)
+                {
                     sheets.Add(GetSheetInfo(sheet));
-
-                ExcelFileInfo result = new ExcelFileInfo(fileName, sheets);
-
-                xlWorkBook.Close();
-                ExitExcelApplication();
-                return result;
+                }
+                result = new ExcelFileInfo(fileName, sheets);
             }
-            catch
-            {
-                if (xlWorkBook != null)
-                    xlWorkBook.Close();
 
-                if (xlApp != null)
-                    ExitExcelApplication();
+            return result;
+        }       
 
-                throw;
-            }
-        }
-        public List<PictureItem> GetPhotoItems(UploadingExcelParameters excelInfo)
+        public static List<PictureItem> GetPhotoItems(UploadingExcelParameters excelInfo)
         {
-            this.OpenedExcelFile = excelInfo.FilePath;
-            try
-            {
-                InitializeExcelApplication();
-                this.xlWorkBook = IExcelProcessor.OpenWorkbook(this.xlApp, excelInfo.FilePath);
-                this.xlWorkSheet = (Excel.Worksheet)xlWorkBook.Sheets[excelInfo.SheetIndex];
+            List<PictureItem> items = new List<PictureItem>(excelInfo.RowEnd - excelInfo.RowBegin + 1);
+            int picNamesColumnNumber = string.IsNullOrEmpty(excelInfo.ColumnWithNames) ? 0 : GetColumnNumber(excelInfo.ColumnWithNames);
+            int picUrlColumnNumber = GetColumnNumber(excelInfo.ColumnWithLinks);
 
-                List<PictureItem> Items = new List<PictureItem>();
-                for (int i = excelInfo.RowBegin; i <= excelInfo.RowEnd; i++)
+            using (ExcelPackage excel = new ExcelPackage(excelInfo.FilePath))
+            {
+                var sheet = excel.Workbook.Worksheets[excelInfo.SheetIndex];
+                var uriBuilder = new ExcelUriBuilder(excelInfo.FilePath);
+
+                for (int row = excelInfo.RowBegin; row <= excelInfo.RowEnd; row++)
                 {
                     string picName = null;
-                    if (!string.IsNullOrEmpty(excelInfo.ColumnWithNames))
+                    if (picNamesColumnNumber > 0)
                     {
-                        if (xlWorkSheet.Range[excelInfo.ColumnWithNames + i].Value != null)
-                        {
-                            picName = xlWorkSheet.Range[excelInfo.ColumnWithNames + i].Value.ToString().Trim();
-                        }
+                        picName = sheet.Cells[row, picNamesColumnNumber].GetValue<string>();
                     }
 
-                    if (string.IsNullOrEmpty(picName))
+                    if (string.IsNullOrWhiteSpace(picName))
+                    {
                         picName = Guid.NewGuid().ToString();
+                    }
+                    else
+                    {
+                        picName = picName.Trim();
+                    }
 
-                    PictureItem item = new PicturesUploader.PictureItem(i, picName);
-                    Uri url = GetUrlFromCell(xlWorkSheet.Range[excelInfo.ColumnWithLinks + i]);
-                    
+                    PictureItem item = new PicturesUploader.PictureItem(row, picName);
+                    Uri url = uriBuilder.GetUrlFromCell(sheet.Cells[row, picUrlColumnNumber]);
+
                     if (url == null)
                     {
                         item.Error = new Exception("Не найдена ссылка в ячейке");
@@ -75,118 +73,101 @@ namespace PicturesUploader.Office
                         item.Address = url;
                     }
 
-                    Items.Add(item);
+                    items.Add(item);
                 }
-
-                return Items;
             }
-            finally
-            {
-                xlWorkBook.Close();
-                ExitExcelApplication();
-            }
-        }   
-        public void UpdatePhotoItems(IEnumerable<PictureItem> items, UploadingExcelParameters excelInfo)
+            return items;
+        }
+        public static void UpdatePhotoItems(IEnumerable<PictureItem> items, UploadingExcelParameters excelInfo)
         {
-            try
+            using (ExcelPackage excel = new ExcelPackage(excelInfo.FilePath))
             {
-                InitializeExcelApplication();
-                this.xlWorkBook = IExcelProcessor.OpenWorkbook(this.xlApp, excelInfo.FilePath);
-                this.xlWorkSheet = (Excel.Worksheet)xlWorkBook.Sheets[excelInfo.SheetIndex];
-                var sheetInfo = GetSheetInfo(this.xlWorkSheet);
-                string targetColumn = ExcelStatic.GetColumnName(sheetInfo.LastCell.Column + 1);
+                var sheet = excel.Workbook.Worksheets[excelInfo.SheetIndex];
+                var sheetInfo = GetSheetInfo(sheet);
+                int targetColumn = sheetInfo.LastCell.Column + 1;
 
                 foreach (var item in items)
                 {
+                    var cell = sheet.Cells[item.RowIndex, targetColumn];
+
                     if (item.Error == null)
                     {
                         string link = (item.Address.Scheme == Uri.UriSchemeFile) ? item.Address.LocalPath : item.Address.AbsoluteUri;
                         string val = excelInfo.IncludeLinkToCell ? link : "Фото";
-                        xlWorkSheet.Hyperlinks.Add(Anchor: xlWorkSheet.Range[targetColumn + item.RowIndex], Address: link, TextToDisplay: val);
+                        cell.Hyperlink = new Uri(link);
+                        cell.Value = val;
                     }
                     else
-                        xlWorkSheet.Range[targetColumn + item.RowIndex].Value = item.Error.Message;
+                    {
+                        cell.Value = item.Error.Message;
+                    }                        
                 }
-                xlWorkBook.Save();
-                xlWorkBook.Close();
-                ExitExcelApplication();
-
-            }
-            catch
-            {
-                if (xlWorkBook != null)
-                    xlWorkBook.Close();
-
-                if (xlApp != null)
-                    ExitExcelApplication();
-
-                throw;
-            }
+                try
+                {
+                    excel.Save();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Ошибка сохранения файла {excelInfo.FilePath}.", ex);
+                }                
+            }            
         }
-        private ExcelSheet GetSheetInfo(Excel.Worksheet sheet)
+        private static ExcelSheet GetSheetInfo(ExcelWorksheet sheet)
         {
-            ExcelSheet result = new Office.ExcelSheet();
-            result.Name = sheet.Name;
-            result.Index = sheet.Index;
-            Excel.Range workRange = sheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell);
-
-            int RowsUsed = workRange.Row;
-            int ColsUsed = workRange.Column;
-            Release(workRange);
-
-            result.LastCell = new ExcelLastCell(RowsUsed, ColsUsed);
-
-            Release(workRange);
+            ExcelSheet result = new Office.ExcelSheet
+            {
+                Name = sheet.Name,
+                Index = sheet.Index,
+            };
+            
+            if (sheet.Dimension == null)
+            {
+                result.LastCell = new ExcelLastCell(1, 1);
+            }
+            else
+            {
+                result.LastCell = new ExcelLastCell(sheet.Dimension.End.Row, sheet.Dimension.End.Column);
+            }
 
             return result;
         }
-        private Uri GetUrlFromCell(Excel.Range range)
+        private static string GetColumnAddress(int columnNumber)
         {
-            Uri u;            
-            if (range == null)
-                return null;
+            int dividend = columnNumber;
+            string columnName = string.Empty;
+            int modulo;
 
-            if (range.Hyperlinks.Count > 0)
+            while (dividend > 0)
             {
-                if (CreateUri(range.Hyperlinks[1].Address, out u))
-                    return u;                
+                modulo = (dividend - 1) % 26;
+                columnName = Convert.ToChar(65 + modulo).ToString() + columnName;
+                dividend = (int)((dividend - modulo) / 26);
             }
-
-            if (range.Value != null)
-            {
-                string url = range.Value.ToString().Trim();
-                if (!string.IsNullOrWhiteSpace(url) && CreateUri(url, out u))
-                    return u;               
-            }
-
-            if (range.Formula != null)
-            {
-                string formula = range.Formula.ToString();
-                if (formula.Contains("HYPERLINK"))
-                {
-                    int Start, End;
-                    Start = formula.IndexOf('"', 0) + 1;
-                    End = formula.IndexOf('"', Start);
-                    formula = formula.Substring(Start, End - Start);
-                    if (CreateUri(formula, out u))
-                        return u;
-                }
-            }            
-
-            return null;
+            return columnName;
         }
-        private bool CreateUri(string s, out Uri uri)
+        private static int GetColumnNumber(string colAdress)
         {
-            if (Uri.TryCreate(s, UriKind.Absolute, out uri))
-                return true;
-
-            string dir = System.IO.Path.GetDirectoryName(this.OpenedExcelFile);
-            string path = System.IO.Path.Combine(dir, s);
-
-            if (System.IO.File.Exists(path) && Uri.TryCreate(path, UriKind.Absolute, out uri))
-                return true;
-
-            return false;
-        }      
+            int[] digits = new int[colAdress.Length];
+            for (int i = 0; i < colAdress.Length; ++i)
+            {
+                digits[i] = Convert.ToInt32(colAdress[i]) - 64;
+            }
+            int mul = 1; int res = 0;
+            for (int pos = digits.Length - 1; pos >= 0; --pos)
+            {
+                res += digits[pos] * mul;
+                mul *= 26;
+            }
+            return res;
+        }
+        public static List<string> GetColumnsNames(int columnNumber)
+        {
+            List<string> columns = new List<string>(columnNumber);
+            for (int i = 1; i <= columnNumber; i++)
+            {
+                columns.Add(GetColumnAddress(i));
+            }
+            return columns;
+        }
     }
 }

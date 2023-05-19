@@ -79,26 +79,34 @@
     <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EPPlus, Version=6.2.4.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.6.2.4\lib\net462\EPPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="EPPlus.Interfaces, Version=6.1.1.0, Culture=neutral, PublicKeyToken=a694d7f3b0907a61, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.Interfaces.6.1.1\lib\net462\EPPlus.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="EPPlus.System.Drawing, Version=6.1.1.0, Culture=neutral, PublicKeyToken=2308d35469c9bac0, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.System.Drawing.6.1.1\lib\net462\EPPlus.System.Drawing.dll</HintPath>
+    </Reference>
     <Reference Include="ImageResizer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\ProjectsPublish\Packages\ImageResizer.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-      <HintPath>..\..\Libraries\ExcelRuntime\Microsoft.Office.Interop.Excel.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=1.4.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.1.4.1\lib\net46\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
     </Reference>
     <Reference Include="NetworkClient, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\ProjectsPublish\Packages\NetworkClient.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Security" />
+    <Reference Include="System.Threading.Tasks" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Updater, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
@@ -113,7 +121,6 @@
     <Compile Include="AboutDialog.Designer.cs">
       <DependentUpon>AboutDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="EmbeddedAssembly.cs" />
     <Compile Include="FTPConnection\Cryptography.cs" />
     <Compile Include="FTPConnection\FTPConnectionSettings.cs" />
     <Compile Include="FTPConnection\FTPSettingsDialog.cs">
@@ -136,10 +143,9 @@
     </Compile>
     <Compile Include="Office\ExcelLastCell.cs" />
     <Compile Include="Office\ExcelSheet.cs" />
-    <Compile Include="Office\ExcelStatic.cs" />
     <Compile Include="Office\ExcelFileInfo.cs" />
+    <Compile Include="Office\ExcelUriBuilder.cs" />
     <Compile Include="Office\UploadingExcelParameters.cs" />
-    <Compile Include="Office\IExcelProcessor.cs" />
     <Compile Include="Office\UsingExcel.cs" />
     <Compile Include="PictureItem.cs" />
     <Compile Include="Processor.cs" />
@@ -195,6 +201,7 @@
     <Compile Include="MainForm.IUpdatable.cs">
       <SubType>Form</SubType>
     </Compile>
+    <None Include="packages.config" />
     <None Include="PicturesUploader_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -207,8 +214,6 @@
     <None Include="Resources\quick-load-icon-24.png" />
     <None Include="Resources\open-file-icon-32.png" />
     <None Include="Resources\Actions-paste-icon.png" />
-    <EmbeddedResource Include="Microsoft.Office.Interop.Excel.dll" />
-    <EmbeddedResource Include="office.dll" />
     <None Include="Resources\Hard-Disk-Server-icon.png" />
     <None Include="Resources\Hard-Disk-Server-icon.ico" />
   </ItemGroup>

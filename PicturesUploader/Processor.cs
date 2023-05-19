@@ -17,10 +17,9 @@ namespace PicturesUploader
             //Loading Items from excel file
             List<PictureItem> items;
             BW.ReportProgress(0, "Считываем таблицу...");
-            using (UsingExcel xls = new UsingExcel())
-            {
-                items = xls.GetPhotoItems(this.Parameters.ExcelInfo);
-            }
+            
+            items = UsingExcel.GetPhotoItems(this.Parameters.ExcelInfo);
+
             if (items == null || items.Count == 0)
             {
                 throw new Exception("Нет записей в списке");
@@ -76,12 +75,9 @@ namespace PicturesUploader
                 ticker.Tick();
             }
 
+            BW.ReportProgress(0, "Записываем результат в Excel файл");
+            UsingExcel.UpdatePhotoItems(uploadedItems, this.Parameters.ExcelInfo);
 
-            using (UsingExcel xls = new UsingExcel())
-            {
-                BW.ReportProgress(0, "Записываем результат в Excel файл");
-                xls.UpdatePhotoItems(uploadedItems, this.Parameters.ExcelInfo);
-            }
             e.Result = items.Count;
         }
         private static ImageResizer.ImageInfo BuildImage(Uri uri, int attempt = 0)
@@ -92,7 +88,7 @@ namespace PicturesUploader
                 if (NetworkClient.GoogleDriveDownloadClient.IsGoogleDriveAddress(uri))
                 {
                     var data = NetworkClient.GoogleDriveDownloadClient.Instance.DownloadData(uri.AbsoluteUri);
-                    image = ImageResizer.ImageInfo.Build(data);                    
+                    image = ImageResizer.ImageInfo.Build(data);
                 }
                 else
                 {
