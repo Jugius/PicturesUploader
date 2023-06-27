@@ -307,17 +307,8 @@ namespace PicturesUploader
             new AboutDialog(this).ShowDialog();
         }
 
-        private void mnuHelp_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start("http://oohelp.net/picturesuploader/#pictureuploader_howto");
-        }
-
-        private void mnuSendLetter_Click(object sender, EventArgs e)
-        {
-            string mailto = $"mailto:{"jugius@gmail.com"}?Subject={"Message from app: PicturesUploader"}";
-            mailto = System.Uri.EscapeUriString(mailto);
-            System.Diagnostics.Process.Start(mailto);
-        }
+        private void mnuSendLetter_Click(object sender, EventArgs e) =>
+            System.Diagnostics.Process.Start(AboutDialog.GetSupportEmailProcessString(this.ApplicationName));
 
         private void mnuCheckUpdates_Click(object sender, EventArgs e) => Task.Run(() => this.Updater.UpdateApplication(UpdateMethod.Manual));
     }

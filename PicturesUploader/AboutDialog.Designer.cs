@@ -69,7 +69,6 @@
             this.linkWWW.TabIndex = 7;
             this.linkWWW.TabStop = true;
             this.linkWWW.Text = "Сайт разработчика";
-            this.linkWWW.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkWWW_LinkClicked);
             // 
             // btCancel
             // 

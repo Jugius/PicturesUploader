@@ -68,11 +68,10 @@
             this.mnuSettingsImage = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.mnuAbout = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.mnuHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuSendLetter = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.mnuShowAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuCheckUpdates = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuShowAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -491,20 +490,12 @@
             // mnuAbout
             // 
             this.mnuAbout.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mnuHelp,
             this.mnuSendLetter,
             this.toolStripSeparator1,
             this.mnuCheckUpdates,
             this.mnuShowAbout});
             this.mnuAbout.Name = "mnuSettings";
-            this.mnuAbout.Size = new System.Drawing.Size(205, 120);
-            // 
-            // mnuHelp
-            // 
-            this.mnuHelp.Name = "mnuHelp";
-            this.mnuHelp.Size = new System.Drawing.Size(204, 22);
-            this.mnuHelp.Text = "Справка";
-            this.mnuHelp.Click += new System.EventHandler(this.mnuHelp_Click);
+            this.mnuAbout.Size = new System.Drawing.Size(205, 98);
             // 
             // mnuSendLetter
             // 
@@ -518,19 +509,19 @@
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(201, 6);
             // 
-            // mnuShowAbout
-            // 
-            this.mnuShowAbout.Name = "mnuShowAbout";
-            this.mnuShowAbout.Size = new System.Drawing.Size(204, 22);
-            this.mnuShowAbout.Text = "О программе";
-            this.mnuShowAbout.Click += new System.EventHandler(this.mnuShowAbout_Click);
-            // 
             // mnuCheckUpdates
             // 
             this.mnuCheckUpdates.Name = "mnuCheckUpdates";
             this.mnuCheckUpdates.Size = new System.Drawing.Size(204, 22);
             this.mnuCheckUpdates.Text = "Проверить обновления";
             this.mnuCheckUpdates.Click += new System.EventHandler(this.mnuCheckUpdates_Click);
+            // 
+            // mnuShowAbout
+            // 
+            this.mnuShowAbout.Name = "mnuShowAbout";
+            this.mnuShowAbout.Size = new System.Drawing.Size(204, 22);
+            this.mnuShowAbout.Text = "О программе";
+            this.mnuShowAbout.Click += new System.EventHandler(this.mnuShowAbout_Click);
             // 
             // MainForm
             // 
@@ -610,7 +601,6 @@
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.CheckBox checkbUseNames;
         private System.Windows.Forms.ContextMenuStrip mnuAbout;
-        private System.Windows.Forms.ToolStripMenuItem mnuHelp;
         private System.Windows.Forms.ToolStripMenuItem mnuSendLetter;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem mnuShowAbout;

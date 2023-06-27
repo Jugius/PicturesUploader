@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Pictures Uploader")]
+[assembly: AssemblyTitle("PicturesUploader")]
 [assembly: AssemblyDescription("Приложение для выкачивания фотографий по прямым ссылкам из файла Excel. Фотографии сохраняются локально, либо на FTP и в таблице Excel генерируются новые ссылки.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("OOHELP")]
-[assembly: AssemblyProduct("Pictures Uploader")]
-[assembly: AssemblyCopyright("© Andrew Slusarev 2015-2023")]
+[assembly: AssemblyCompany("OoHelp.Net")]
+[assembly: AssemblyProduct("PicturesUploader")]
+[assembly: AssemblyCopyright("© 2023 OoHelp.Net")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
